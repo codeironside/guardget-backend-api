@@ -2,7 +2,8 @@
 
 import mongoose from "mongoose";
 import chalk from "chalk";
-import {config }from "@/core/utls/config/index"; 
+import { config } from "@/core/utls/config/index"; 
+import  Logger  from "@/core/logger";
 
 
 export class Database {
@@ -13,9 +14,10 @@ export class Database {
     this.uri = config.MONGO_URI;
   }
 
-  /** Connect to MongoDB using Mongoose */
+
   public async connect(): Promise<void> {
     const day = new Date().toISOString();
+  
     try {
       await mongoose.connect(this.uri);
       console.log(
@@ -23,7 +25,7 @@ export class Database {
         chalk.green("INFO:"),
         `✅ Successfully connected to the database. on ${config.NODE_ENV}`
       );
-      logger.info("✅ Successfully connected to the database.");
+      Logger.info("✅ Successfully connected to the database.");
     } catch (err: any) {
       console.error(
         day,
@@ -44,7 +46,7 @@ export class Database {
         chalk.green("INFO:"),
         "✅ Successfully disconnected from the database."
       );
-      logger.info("✅ Successfully disconnected from the database.");
+      Logger.info("✅ Successfully disconnected from the database.");
     } catch (err: any) {
       console.error(
         day,

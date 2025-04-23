@@ -35,7 +35,7 @@ const customLevels = {
 config.addColors(customLevels.colors);
 
 const dailyTransport = new transports.DailyRotateFile({
-  dirname: path.join(__dirname, "../../logs"),
+  dirname: path.join(__dirname, "../../../logs"),
   filename: "application-%DATE%.log",
   datePattern: "YYYY-MM-DD", 
   zippedArchive: true,
@@ -50,8 +50,7 @@ const dailyTransport = new transports.DailyRotateFile({
 dailyTransport.on("error", (err) => {
   console.error(`[Logger Transport Error] ${err.message}`);
 });
-
-export class Logger {
+class Logger {
   private logger: WinstonLogger;
 
   constructor() {
@@ -104,4 +103,4 @@ export class Logger {
   }
 }
 
-// export default new Logger();
+export default new Logger();

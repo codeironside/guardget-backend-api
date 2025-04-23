@@ -1,0 +1,1 @@
+export const API_SUFFIX = "ap1/v1";

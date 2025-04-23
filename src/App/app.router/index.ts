@@ -1,9 +1,10 @@
-import { Request, Router } from "express";
+import { userRouter } from "@/Api/Users/routers";
+import {  Router } from "express";
 
 
 const router = Router();
 
-router.get("/cad", (req:Request) => { })
+router.use("/users", userRouter)
 
 
 export default router;

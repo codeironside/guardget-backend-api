@@ -11,6 +11,7 @@ interface Config {
   NODE_ENV: string;
   MONGO_URI: string;
   ID_ENC_SECRET: string;
+  SESSIONSECRET: string;
 }
 
 // Export the concrete implementation
@@ -24,4 +25,5 @@ export const config: Config = {
   NODE_ENV: process.env.NODE_ENV || "development",
   MONGO_URI: process.env.MONGO_URI || "",
   ID_ENC_SECRET: process.env.ID_ENC_SECRET || "",
+  SESSIONSECRET: process.env.SESSION_SECRET || "",
 };

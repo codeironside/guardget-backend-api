@@ -17,9 +17,9 @@
   "description": "",
   "dependencies": {
     "chalk": "^5.4.1",
+    "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "express-session": "^1.18.1",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
@@ -29,6 +29,7 @@
     "@types/module-alias": "^2.0.4",
     "@types/mongoose": "^5.11.96",
     "@types/winston": "^2.4.4",
+    "express-session": "^1.18.1",
     "module-alias": "^2.2.3",
     "mongoose": "^8.13.2",
     "nodemon": "^3.1.10",

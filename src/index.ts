@@ -1,33 +1,31 @@
-
 import http from "http";
+
 import dotenv from "dotenv";
-dotenv.config();
 import "module-alias/register";
-
-import { errorHandler } from "@/core/middleware/errorHandler";
-import express, { Request, Response } from "express";
-import { config } from "./core/utls/config";
-
-import Db from "@/core/utls/database";
-import { GracefulShutdown } from "@/core/utls/gracefulShutDown";
+dotenv.config();
 import chalk from "chalk";
-import { API_SUFFIX } from "@/core/utls/types/global";
+import session from "express-session";
+import Db from "@/core/utils/database";
+import { config } from "./core/utils/config";
+import { day } from "@/core/utils/types/global";
+import express, { Request, Response } from "express";
+import { sessionMiddleware } from "@/core/utils/sessions";
+import { errorHandler } from "@/core/middleware/errorHandler";
+import { GracefulShutdown } from "@/core/utils/gracefulShutDown";
 
-
-
+import { API_SUFFIX } from "@/core/utils/types/global";
 
 const app = express();
+app.use(session(sessionMiddleware));
 Db.connect();
 const server = http.createServer(app);
 const shutdown = new GracefulShutdown(server, 15000);
 
-const day = new Date().toISOString();
 shutdown.registerTeardown(() => Db.disconnect());
 import router from "@/App/app.router";
 app.use(API_SUFFIX, router);
 
-
-app.post("/shutdown", (req: Request, res: Response) => {
+app.get("/shutdown", (req: Request, res: Response) => {
   res.json({ status: "shutting down" });
   shutdown.trigger();
 });

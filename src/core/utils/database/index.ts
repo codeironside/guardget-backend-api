@@ -2,9 +2,8 @@
 
 import mongoose from "mongoose";
 import chalk from "chalk";
-import { config } from "@/core/utls/config/index"; 
-import  Logger  from "@/core/logger";
-
+import { config } from "@/core/utils/config/index";
+import Logger from "@/core/logger";
 
 export class Database {
   private uri: string;
@@ -14,10 +13,9 @@ export class Database {
     this.uri = config.MONGO_URI;
   }
 
-
   public async connect(): Promise<void> {
     const day = new Date().toISOString();
-  
+
     try {
       await mongoose.connect(this.uri);
       console.log(
@@ -32,10 +30,9 @@ export class Database {
         chalk.red("ERROR:"),
         `❌ Failed to connect to the database: ${err.message || err}`
       );
-      process.exit(1); 
+      process.exit(1);
     }
   }
-
 
   public async disconnect(): Promise<void> {
     const day = new Date().toISOString();

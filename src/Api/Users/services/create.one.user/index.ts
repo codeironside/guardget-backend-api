@@ -27,13 +27,13 @@ export const createUser = async (
     } = req.body;
 
     const roles = await Roles.findOne({
-       role,
+      role,
     });
-    const userExist = await User.findOne({ email });
-    const numberExist = await User.findOne({ phoneNumber });
-    const usernameExist = await User.findOne({ username });
+    const existingUser = await User.findOne({
+      $or: [{ email }, { phoneNumber }, { username }],
+    });
 
-    if (userExist || numberExist || usernameExist) {
+    if (existingUser) {
       throw new Error("User already exists");
     }
     const otp = await OTPGenerator.generate();
@@ -43,35 +43,34 @@ export const createUser = async (
       to: phoneNumber,
       text,
     });
-      if (sentOTp) {
-          console.log(`OTP sent successfully: ${JSON.stringify(sentOTp)}`);
-          req.session.user = {
-              otpCode: otp,
-              username,
-              firstName,
-              middleName,
-              surName,
-              role: roles?._id,
-              country,
-              stateOfOrigin,
-              phoneNumber,
-              address,
-              email,
-              password,
-          };
+    if (sentOTp) {
+      console.log(`OTP sent successfully: ${JSON.stringify(sentOTp)}`);
+      req.session.user = {
+        otpCode: otp,
+        username,
+        firstName,
+        middleName,
+        surName,
+        role: roles?._id,
+        country,
+        stateOfOrigin,
+        phoneNumber,
+        address,
+        email,
+        password,
+      };
 
-          Logger.warn(
-              `instantiated a user with ${email} not verified creation process`
-          );
-          res.status(201).json({
-              status: "success",
-              message: "otp sent please check your phone",
-              data: otp,
-          });
-      }
-      else {
-          console.warn(`issues sending OTP: ${sentOTp}`);
-      }
+      Logger.warn(
+        `instantiated a user with ${email} not verified creation process`
+      );
+      res.status(201).json({
+        status: "success",
+        message: "otp sent please check your phone",
+        data: otp,
+      });
+    } else {
+      console.warn(`issues sending OTP: ${sentOTp}`);
+    }
   } catch (error) {
     console.error("Error creating user:", error);
     req.session.destroy((err) => {

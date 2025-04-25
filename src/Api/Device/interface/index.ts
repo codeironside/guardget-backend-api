@@ -8,5 +8,49 @@ export interface DeviceModel {
   SN: string;
   Type: string;
   UserId: Types.ObjectId;
-  status: boolean;
+  status: string;
+}
+
+
+
+export enum DeviceStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  LOST = "lost",
+  STOLEN = "stolen",
+}
+
+
+
+export interface DeviceCreateDTO {
+  name: string;
+  IMIE1: string;
+  IMEI2?: string;
+  SN: string;
+  Type: string;
+}
+
+export interface DeviceTransferDto {
+  newUserId: string;
+}
+
+export interface DeviceStatusUpdateDto {
+  status: DeviceStatus;
+}
+
+export interface DeviceSearchParams {
+  imei: string;
+}
+
+export interface DeviceResponse {
+  id: string;
+  name: string;
+  IMIE1: string;
+  IMEI2?: string;
+  SN: string;
+  Type: string;
+  status: DeviceStatus;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

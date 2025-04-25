@@ -1,16 +1,16 @@
-import { User } from "../../model/users";
+import { User } from "@/Api/Users/model/users";
 import { Device } from "@/Api/Device/models";
 import logger from "@/core/logger";
 import { BadRequestError } from "@/core/error";
 import { Request, Response } from "express";
-import { CreateUserDTO } from "../../interfaces/user.dto";
+import { CreateUserDTO } from "@/Api/Users/interfaces/user.dto";
 
 export const updateUser = async (
-  req: Request<{}, {}, Partial<CreateUserDTO>>,
+  req: Request<{ id: string }, {}, Partial<CreateUserDTO>>,
   res: Response
 ): Promise<void> => {
   try {
-    const id = req.userId;
+    const { id } = req.params;
     const updateData = req.body;
 
     if (updateData.email) {

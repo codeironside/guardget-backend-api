@@ -15,22 +15,20 @@ import { errorHandler } from "@/core/middleware/errorHandler";
 import { GracefulShutdown } from "@/core/utils/gracefulShutDown";
 import { API_SUFFIX } from "@/core/utils/types/global";
 import { day } from "@/core/utils/types/global";
+import limiter from "./core/utils/ratelimiter";
 
 const app = express();
 
 console.log(chalk.blue("🚀 Starting server..."));
 
-// Middleware
 app.use(express.json());
 app.use(session(sessionMiddleware));
-
-// Routes
+app.use(limiter);
+app.use(express.urlencoded({ extended: true }));
 app.use(API_SUFFIX, router);
 
-// Error Handler
 app.use(errorHandler);
 
-// Process event listeners for diagnostics
 process.on("exit", (code) => {
   console.log(chalk.yellow(`Process exiting with code: ${code}`));
 });

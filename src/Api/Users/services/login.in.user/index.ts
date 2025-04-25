@@ -4,6 +4,7 @@ import { LoginUser } from "../../interfaces/user.dto";
 import { BadRequestError } from "@/core/error";
 import bycrypt from "bcrypt";
 import CryptoService from "@/core/services/encryption";
+import { Roles } from "../../model/roles/role";
 
 
 export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): Promise<void> => { 
@@ -20,6 +21,7 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
         if (!isPasswordValid) {
             throw new BadRequestError("invalid password");
         }
+        const role = await Roles.findById(userExist.role);
         const token = await CryptoService.encryptId(userExist._id.toString());
         const user = {
             id: userExist._id,
@@ -27,7 +29,7 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
             firstName: userExist.firstName,
             middleName: userExist.middleName,
             surName: userExist.surName,
-            role: userExist.role,
+            role: role?.name,
             accessToken: token,
             country: userExist.country,
             stateOfOrigin: userExist.stateOfOrigin,

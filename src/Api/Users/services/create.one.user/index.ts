@@ -36,20 +36,6 @@ export const createUser = async (
     if (userExist || numberExist || usernameExist) {
       throw new Error("User already exists");
     }
-
-    // const newUser = new User({
-    //   username,
-    //   firstName,
-    //   middleName,
-    //   surName,
-    //   role: roles?._id,
-    //   country,
-    //   stateOfOrigin,
-    //   phoneNumber,
-    //   address,
-    //   email,
-    //   password,
-    // });
     const otp = await OTPGenerator.generate();
     const text = `welcome to guarget, this your OTP code ${otp}, please use it to verify your account, and do not disclose it.`;
 
@@ -79,7 +65,7 @@ export const createUser = async (
           );
           res.status(201).json({
               status: "success",
-              message: "User created successfully",
+              message: "otp sent please check your phone",
               data: otp,
           });
       }

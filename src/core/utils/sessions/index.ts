@@ -18,7 +18,7 @@ declare module "express-session" {
   interface SessionData {
     user: {
       _id?: any;
-      otpCode?: string;
+      otpCode?: any;
       username?: string;
       firstName?: string;
       middleName?: string;
@@ -30,6 +30,7 @@ declare module "express-session" {
       address?: string;
       email?: string;
       password?: string;
+      changepassword?: boolean;
     };
   }
 }

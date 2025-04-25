@@ -35,6 +35,7 @@ export interface UserModel {
   emailVerified: boolean;
   subActive: boolean;
   password: string;
+  subId:Types.ObjectId;
   subActiveTill: Date;
   lastLogin: Date;
   createdAt: Date;
@@ -51,4 +52,13 @@ export interface RolesModel {
 
 export interface OTP{
   otp:string;
+}
+
+export interface LoginUser{
+  email: string;
+  password: string;
+}
+
+export interface HashedPassword{
+  password: string;
 }

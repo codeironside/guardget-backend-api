@@ -15,6 +15,7 @@ interface Config {
   TERMII_API_KEY: string;
   TERMII_BASE_URL: string;
   TERMII_DEVICE_ID:string
+  TERMII_SENDER_ID:string
 
 
 
@@ -34,5 +35,6 @@ export const config: Config = {
   SESSIONSECRET: process.env.SESSION_SECRET || "",
   TERMII_API_KEY: process.env.TERMII_API_KEY || "",
   TERMII_BASE_URL: process.env.TERMII_BASE_URL|| "",
-  TERMII_DEVICE_ID:process.env.TERMII_DEVICE_ID|| ""
+  TERMII_DEVICE_ID: process.env.TERMII_DEVICE_ID || "",
+  TERMII_SENDER_ID:process.env.TERMII_SENDER_ID|| ''
 };

@@ -4,7 +4,7 @@ export type ErrorDetailsDescriptor = Array<{
 }> | null;
 
 export abstract class ApiError extends Error {
-  abstract _statusCode: number;
+  protected abstract _statusCode: number;
   abstract _message: string;
   abstract _details: ErrorDetailsDescriptor;
 

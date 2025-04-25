@@ -50,6 +50,9 @@ const userSchema = new Schema<UserModel>(
       type: Boolean,
       default: false,
     },
+    subId: {
+      type: Schema.Types.ObjectId,
+    },
     subActive: { type: Boolean, default: false },
     subActiveTill: {
       type: Date,

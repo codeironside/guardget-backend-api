@@ -10,12 +10,27 @@ interface OTPinterface{
 }
 
 
-export class OTPGenerator{
-    static generate(): string {
-        const otpLength = 8;
-        const max = 10 ** otpLength;
-        const otp = crypto.randomInt(0, max)
-    return otp.toString().padStart(otpLength, '0');
-        
+
+
+export class OTPGenerator {
+  static generate(
+    length: number = 8,
+    includeSpecialChars: boolean = false
+  ): string {
+    const numbers = "0123456789";
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const specialChars = "!@#$%^&*";
+    let charset = numbers + letters;
+    if (includeSpecialChars) {
+      charset += specialChars;
     }
+    const randomBytes = crypto.randomBytes(length);
+    const otpArray = new Array(length);
+    for (let i = 0; i < length; i++) {
+      const randomIndex = crypto.randomInt(0, charset.length);
+      otpArray[i] = charset[randomIndex];
+    }
+
+    return otpArray.join("");
+  }
 }

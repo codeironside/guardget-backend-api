@@ -1,3 +1,6 @@
+import { UUID } from "crypto";
+import { Types } from "mongoose";
+
 export interface CreateUserDTO {
   username: string;
   Contact: string;
@@ -6,6 +9,8 @@ export interface CreateUserDTO {
   surName: string;
   country: string;
   stateOfOrigin: string;
+  address: string;
+  role: string;
   phoneNumber: string;
   email: string;
   password: string;
@@ -21,7 +26,7 @@ export interface UserModel {
   firstName: string;
   middleName?: string;
   surName: string;
-  role: string;
+  role: Types.ObjectId;
   country: string;
   stateOfOrigin: string;
   phoneNumber: string;
@@ -34,4 +39,16 @@ export interface UserModel {
   lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface RolesModel {
+  _id: Types.ObjectId;
+  name: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OTP{
+  otp:string;
 }

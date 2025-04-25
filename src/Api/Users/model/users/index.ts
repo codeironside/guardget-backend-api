@@ -1,12 +1,12 @@
-import { Schema,model } from "mongoose";
-import { UserModel } from "../interfaces/user.dto";
+import { Schema, model } from "mongoose";
+import { UserModel } from "../../interfaces/user.dto";
 
 const userSchema = new Schema<UserModel>(
   {
     username: {
       type: String,
       required: true,
-      unique: true,
+      unique: [true, "Username already exists"],
     },
     firstName: {
       type: String,
@@ -21,8 +21,9 @@ const userSchema = new Schema<UserModel>(
       required: true,
     },
     role: {
-      type: String,
+      type: Schema.Types.ObjectId,
       required: true,
+      ref:"Roles"
     },
     country: {
       type: String,
@@ -43,7 +44,7 @@ const userSchema = new Schema<UserModel>(
     email: {
       type: String,
       required: true,
-      unique: true,
+      unique: [true, "Email already exists"],
     },
     emailVerified: {
       type: Boolean,

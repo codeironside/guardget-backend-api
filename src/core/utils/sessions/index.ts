@@ -17,18 +17,19 @@ export const sessionMiddleware: Express.SessionOptions = {
 declare module "express-session" {
   interface SessionData {
     user: {
-      _id: any;
+      _id?: any;
       otpCode?: string;
       username?: string;
       firstName?: string;
       middleName?: string;
       surName?: string;
-      role?: string;
+      role?: any;
       country?: string;
       stateOfOrigin?: string;
       phoneNumber?: string;
       address?: string;
       email?: string;
+      password?: string;
     };
   }
 }

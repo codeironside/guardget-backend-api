@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-export class CryptoService {
+class CryptoService {
   private algorithm = "aes-256-gcm";
   private key: Buffer;
 

@@ -2,10 +2,10 @@
 
 import mongoose from "mongoose";
 import chalk from "chalk";
-import { config } from "@/core/utils/config/index";
+import { config } from "@/core/utils/config";
 import Logger from "@/core/logger";
 
-export class Database {
+class Database {
   private uri: string;
 
   constructor() {
@@ -30,7 +30,8 @@ export class Database {
         chalk.red("ERROR:"),
         `❌ Failed to connect to the database: ${err.message || err}`
       );
-      process.exit(1);
+      // Throw error instead of exiting process to allow graceful handling
+      throw err;
     }
   }
 

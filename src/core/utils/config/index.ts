@@ -12,6 +12,12 @@ interface Config {
   MONGO_URI: string;
   ID_ENC_SECRET: string;
   SESSIONSECRET: string;
+  TERMII_API_KEY: string;
+  TERMII_BASE_URL: string;
+  TERMII_DEVICE_ID:string
+
+
+
 }
 
 // Export the concrete implementation
@@ -26,4 +32,7 @@ export const config: Config = {
   MONGO_URI: process.env.MONGO_URI || "",
   ID_ENC_SECRET: process.env.ID_ENC_SECRET || "",
   SESSIONSECRET: process.env.SESSION_SECRET || "",
+  TERMII_API_KEY: process.env.TERMII_API_KEY || "",
+  TERMII_BASE_URL: process.env.TERMII_BASE_URL|| "",
+  TERMII_DEVICE_ID:process.env.TERMII_DEVICE_ID|| ""
 };

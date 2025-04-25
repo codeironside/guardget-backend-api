@@ -1,48 +1,82 @@
-import http from "http";
-
-import dotenv from "dotenv";
 import "module-alias/register";
+import dotenv from "dotenv";
 dotenv.config();
+
+import http from "http";
 import chalk from "chalk";
-import session from "express-session";
-import Db from "@/core/utils/database";
-import { config } from "./core/utils/config";
-import { day } from "@/core/utils/types/global";
 import express, { Request, Response } from "express";
+import session from "express-session";
+
+import router from "@/App/app.router";
+import Db from "@/core/utils/database";
+import { config } from "@/core/utils/config";
 import { sessionMiddleware } from "@/core/utils/sessions";
 import { errorHandler } from "@/core/middleware/errorHandler";
 import { GracefulShutdown } from "@/core/utils/gracefulShutDown";
-
 import { API_SUFFIX } from "@/core/utils/types/global";
+import { day } from "@/core/utils/types/global";
 
 const app = express();
-app.use(session(sessionMiddleware));
-Db.connect();
-const server = http.createServer(app);
-const shutdown = new GracefulShutdown(server, 15000);
 
-shutdown.registerTeardown(() => Db.disconnect());
-import router from "@/App/app.router";
+console.log(chalk.blue("🚀 Starting server..."));
+
+// Middleware
+app.use(express.json());
+app.use(session(sessionMiddleware));
+
+// Routes
 app.use(API_SUFFIX, router);
 
-app.get("/shutdown", (req: Request, res: Response) => {
-  res.json({ status: "shutting down" });
-  shutdown.trigger();
+// Error Handler
+app.use(errorHandler);
+
+// Process event listeners for diagnostics
+process.on("exit", (code) => {
+  console.log(chalk.yellow(`Process exiting with code: ${code}`));
 });
-app.get("/ping", (req: Request, res: Response) => {
-  res.json({
-    status: "GOOD",
-    V1: `1.0.0`,
-    message: "pong : ✅SERVER HEALTH IS GOOD",
-  });
+process.on("uncaughtException", (err) => {
+  console.error(chalk.red("Uncaught Exception:"), err);
 });
-server.listen(config.PORT, () => {
-  console.log(
-    day,
-    chalk.green("[INFO:]"),
-    ` ✅ server listening on port ${config.PORT} on ${config.NODE_ENV};`
+process.on("unhandledRejection", (reason, promise) => {
+  console.error(
+    chalk.red("Unhandled Rejection at:"),
+    promise,
+    "reason:",
+    reason
   );
 });
-app.use(errorHandler);
+
+(async function initialize() {
+  try {
+    console.log(chalk.blue("Connecting to database..."));
+    const server = http.createServer(app);
+    Db.connect();
+    server.listen(config.PORT, () => {
+      console.log(
+        day,
+        chalk.green("INFO:"),
+        ` 🚀 server on running ${config.PORT} on ${config.NODE_ENV}`
+      );
+    });
+
+    const shutdown = new GracefulShutdown(server, 15000);
+    shutdown.registerTeardown(() => Db.disconnect());
+    app.get("/ping", (req: Request, res: Response) => {
+      res.json({
+        status: "GOOD",
+        V1: `1.0.0`,
+        message: "pong : ✅SERVER HEALTH IS GOOD",
+      });
+    });
+
+    app.get("/shutdown", (req: Request, res: Response) => {
+      res.json({ status: "shutting down" });
+      // shutdown.trigger();
+    });
+  } catch (error) {
+    console.error(chalk.red("❌ Failed to initialize server:"), error);
+    // Do not exit process immediately, allow for graceful handling or retry
+  }
+})();
 
 export { app };

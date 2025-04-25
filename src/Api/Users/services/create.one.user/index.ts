@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
-import { User } from "../../model";
+import { User } from "../../model/users";
 import { CreateUserDTO } from "../../interfaces/user.dto";
 import { OTPGenerator } from "@/core/utils/otpGenerator";
 import Logger from "@/core/logger";
+import WhatsAppService from "@/core/services/whatsapp";
+import { Roles } from "../../model/roles/role";
+import { BadRequestError } from "@/core/error/";
 
 export const createUser = async (
-  req: Request<CreateUserDTO>,
+  req: Request<{}, {}, CreateUserDTO>,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const {
       username,
@@ -23,37 +26,73 @@ export const createUser = async (
       password,
     } = req.body;
 
-    const newUser = new User({
-      username,
-      firstName,
-      middleName,
-      surName,
-      role,
-      country,
-      stateOfOrigin,
-      phoneNumber,
-      address,
-      email,
-      password,
+    const roles = await Roles.findOne({
+       role,
     });
-    const otp = OTPGenerator.generate();
-    req.session.user = {
-      otpCode: otp,
-      _id: newUser._id,
-    };
-    await newUser.save();
-    Logger.warn(`instantiated a user with ${email} creation process`);
-    return res.status(201).json({
-      status: "success",
-      message: "User created successfully",
-      data: otp,
+    const userExist = await User.findOne({ email });
+    const numberExist = await User.findOne({ phoneNumber });
+    const usernameExist = await User.findOne({ username });
+
+    if (userExist || numberExist || usernameExist) {
+      throw new Error("User already exists");
+    }
+
+    // const newUser = new User({
+    //   username,
+    //   firstName,
+    //   middleName,
+    //   surName,
+    //   role: roles?._id,
+    //   country,
+    //   stateOfOrigin,
+    //   phoneNumber,
+    //   address,
+    //   email,
+    //   password,
+    // });
+    const otp = await OTPGenerator.generate();
+    const text = `welcome to guarget, this your OTP code ${otp}, please use it to verify your account, and do not disclose it.`;
+
+    const sentOTp = await WhatsAppService.sendMessage({
+      to: phoneNumber,
+      text,
     });
+      if (sentOTp) {
+          console.log(`OTP sent successfully: ${JSON.stringify(sentOTp)}`);
+          req.session.user = {
+              otpCode: otp,
+              username,
+              firstName,
+              middleName,
+              surName,
+              role: roles?._id,
+              country,
+              stateOfOrigin,
+              phoneNumber,
+              address,
+              email,
+              password,
+          };
+
+          Logger.warn(
+              `instantiated a user with ${email} not verified creation process`
+          );
+          res.status(201).json({
+              status: "success",
+              message: "User created successfully",
+              data: otp,
+          });
+      }
+      else {
+          console.warn(`issues sending OTP: ${sentOTp}`);
+      }
   } catch (error) {
     console.error("Error creating user:", error);
-    return res.status(500).json({
-      status: "error",
-      message: "Internal server error",
-      error: error,
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+      }
     });
+    throw new BadRequestError(`Error creating user: ${error}`);
   }
 };

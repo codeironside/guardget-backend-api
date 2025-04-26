@@ -5,7 +5,7 @@ const userSchema = new Schema<UserModel>(
   {
     username: {
       type: String,
-      required: true,
+      required: [true, "Username is required"],
       unique: [true, "Username already exists"],
     },
     firstName: {
@@ -43,8 +43,13 @@ const userSchema = new Schema<UserModel>(
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: [true, "Email already exists"],
+    },
+    keyholder: {
+      type: String,
+      required: [true, "Keyholder is required"],
+
     },
     emailVerified: {
       type: Boolean,

@@ -24,6 +24,7 @@ export const createUser = async (
       address,
       email,
       password,
+      keyholder,
     } = req.body;
 
     const roles = await Roles.findOne({

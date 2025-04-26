@@ -15,6 +15,7 @@ export interface CreateUserDTO {
   phoneNumber: string;
   email: string;
   password: string;
+  keyholder: string;
 }
 
 export interface GetUserById {
@@ -35,7 +36,7 @@ export interface UserModel extends Document {
   email: string;
   emailVerified: boolean;
   subActive: boolean;
-
+  keyholder: string;
   password: string;
   subId?: PopulatedDoc<SubscriptionModel>;
   subActiveTill: Date;

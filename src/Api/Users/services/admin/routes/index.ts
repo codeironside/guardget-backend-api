@@ -27,12 +27,12 @@ adminRouter.put("/admin_priviledgs",updateUser)
 //Device management
 adminRouter.get("/getdeVices", getAllDevices)
 adminRouter.get("/getallforauser/:userId", getUserDevices)
-adminRouter.get("/getOneDevice", getOneUserDevice)
+adminRouter.get("/getOneDevice/:userid/devices/:deviceId", getOneUserDevice)
 
 //Receipt management
 adminRouter.get("/getAllreceipt", getAllReceipts)
-adminRouter.get("/getUserReceipts", getUserReceipts)
-adminRouter.get("/getOneReceipt", getOneReceipt)
+adminRouter.get("/getUserReceipts/:userId", getUserReceipts)
+adminRouter.get("/getOneReceipt/:receiptId", getOneReceipt)
 
 
 

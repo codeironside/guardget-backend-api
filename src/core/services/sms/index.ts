@@ -28,15 +28,27 @@ class SMSService {
   private apiKey: string;
   private baseUrl: string;
   private senderId: string;
+  private channel: string;
+  private smsType: string;
+  private from: string;
 
   constructor() {
     this.apiKey = config.TERMII_API_KEY!;
     this.baseUrl = config.TERMII_BASE_URL!;
+    this.channel = config.TERMII_CHANNEL!;
+    this.smsType = config.TERMII_SMS_TYPE!;
     this.senderId = config.TERMII_SENDER_ID!;
+    this.from = config.TERMII_FROM!
     if (!this.apiKey || !this.senderId) {
       throw new Error("Termii API key or sender ID not configured");
     }
   }
+  private async cleanPhoneNumber(to:string) {
+  if (to.startsWith("2340")) {
+    return "234" + to.slice(4); // Remove the '0' after '234'
+  }
+  return to; // Leave unchanged if there's no '0'
+}
 
   public async sendMessage({
     to,
@@ -45,12 +57,12 @@ class SMSService {
     const url = `${this.baseUrl}/api/sms/send`;
 
     const body = {
-      to,
+      to: this.cleanPhoneNumber(to),
       sms: text,
-      from: this.senderId,
+      from: this.from,
       api_key: this.apiKey,
-      type: "plain",
-      channel: "generic",
+      type: this.smsType,
+      channel: this.channel,
     };
 
     const response = await fetch(url, {

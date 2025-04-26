@@ -16,6 +16,9 @@ interface Config {
   TERMII_BASE_URL: string;
   TERMII_DEVICE_ID: string;
   TERMII_SENDER_ID: string;
+  TERMII_FROM: string;
+  TERMII_SMS_TYPE: string;
+  TERMII_CHANNEL: string;
   PAYSTACK_SECRET_KEY: string;
 }
 
@@ -35,5 +38,8 @@ export const config: Config = {
   TERMII_BASE_URL: process.env.TERMII_BASE_URL|| "",
   TERMII_DEVICE_ID: process.env.TERMII_DEVICE_ID || "",
   TERMII_SENDER_ID: process.env.TERMII_SENDER_ID || '',
+  TERMII_FROM: process.env.TERMII_FROM || "N-Alert",
+  TERMII_SMS_TYPE: process.env.TERMII_SMS_TYPE || "plain",
+  TERMII_CHANNEL: process.env.TERMII_CHANNEL || "dnd",
   PAYSTACK_SECRET_KEY:process.env.PAYSTACK_SECRET_KEY || '' 
 };

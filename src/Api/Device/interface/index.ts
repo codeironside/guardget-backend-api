@@ -53,4 +53,9 @@ export interface DeviceResponse {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+    user: {
+    id: string,
+    username: string,
+    email: string,
+  }
 }

@@ -24,7 +24,7 @@ export async function authenticate(
       throw new AppError("User not found", 404);
     }
 
-    req.userId = userExist._id.toString();
+    req.userId = userExist._id!.toString();
     next();
   } catch (err) {
     throw new AppError("Invalid or expired token", 401);

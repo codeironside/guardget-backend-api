@@ -1,5 +1,6 @@
 import { UUID } from "crypto";
-import { Types } from "mongoose";
+import { Types, Document, PopulatedDoc } from "mongoose";
+import { SubscriptionModel } from "@/Api/Subscription/interface";
 
 export interface CreateUserDTO {
   username: string;
@@ -20,7 +21,7 @@ export interface GetUserById {
   id: string;
 }
 
-export interface UserModel {
+export interface UserModel extends Document {
   id: string;
   username: string;
   firstName: string;
@@ -34,8 +35,9 @@ export interface UserModel {
   email: string;
   emailVerified: boolean;
   subActive: boolean;
+
   password: string;
-  subId:Types.ObjectId;
+  subId?: PopulatedDoc<SubscriptionModel>;
   subActiveTill: Date;
   lastLogin: Date;
   createdAt: Date;

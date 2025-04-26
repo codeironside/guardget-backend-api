@@ -14,11 +14,9 @@ interface Config {
   SESSIONSECRET: string;
   TERMII_API_KEY: string;
   TERMII_BASE_URL: string;
-  TERMII_DEVICE_ID:string
-  TERMII_SENDER_ID:string
-
-
-
+  TERMII_DEVICE_ID: string;
+  TERMII_SENDER_ID: string;
+  PAYSTACK_SECRET_KEY: string;
 }
 
 // Export the concrete implementation
@@ -36,5 +34,6 @@ export const config: Config = {
   TERMII_API_KEY: process.env.TERMII_API_KEY || "",
   TERMII_BASE_URL: process.env.TERMII_BASE_URL|| "",
   TERMII_DEVICE_ID: process.env.TERMII_DEVICE_ID || "",
-  TERMII_SENDER_ID:process.env.TERMII_SENDER_ID|| ''
+  TERMII_SENDER_ID: process.env.TERMII_SENDER_ID || '',
+  PAYSTACK_SECRET_KEY:process.env.PAYSTACK_SECRET_KEY || '' 
 };

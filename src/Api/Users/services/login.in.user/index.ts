@@ -22,7 +22,7 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
             throw new BadRequestError("invalid password");
         }
         const role = await Roles.findById(userExist.role);
-        const token = await CryptoService.encryptId(userExist._id.toString());
+        const token = await CryptoService.encryptId(userExist._id!.toString());
         const user = {
             id: userExist._id,
             username: userExist.username,

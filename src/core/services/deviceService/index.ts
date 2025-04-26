@@ -8,98 +8,36 @@ import { SubscriptionModel } from "@/Api/Subscription/interface";
 
 export class DeviceService {
   static async validateDeviceLimit(userId: string): Promise<void> {
-    const user = await User.findById(userId).populate("subscription");
+    const user = await User.findById(userId).populate("subId").exec();
+    const subscription = user?.subId as unknown as SubscriptionModel;
 
-    if (!user?.subscription) {
+    if (!subscription) {
       throw new BadRequestError("No active subscription");
     }
 
     const deviceCount = await Device.countDocuments({ UserId: userId });
-    if (deviceCount >= user.subscription.NoOfDecives) {
+    if (deviceCount >= subscription.NoOfDecives) {
       throw new BadRequestError("Device limit reached");
     }
   }
-
   static async createDevice(data: Partial<DeviceModel>): Promise<DeviceModel> {
     const session = await mongoose.startSession();
     try {
       session.startTransaction();
 
       const device = await Device.create([data], { session });
+      const populatedDevice = await Device.findById(device[0]._id)
+        .populate("UserId", "username email")
+        .session(session);
+
       await session.commitTransaction();
-      return device[0];
+      return populatedDevice!;
     } catch (error) {
       await session.abortTransaction();
       throw error;
     } finally {
       session.endSession();
     }
-  }
-
-  static async updateDeviceStatus(
-    deviceId: string,
-    userId: string,
-    status: DeviceStatus
-  ): Promise<DeviceModel> {
-    const device = await Device.findOneAndUpdate(
-      { _id: deviceId, UserId: userId },
-      { status },
-      { new: true, runValidators: true }
-    );
-
-    if (!device) throw new BadRequestError("Device not found");
-    return device;
-  }
-
-  static async transferDevice(
-    deviceId: string,
-    currentUserId: string,
-    newUserId: string
-  ): Promise<DeviceModel> {
-    const session = await mongoose.startSession();
-    try {
-      session.startTransaction();
-      const newUser = await User.findById(newUserId).populate("subscription");
-      if (!newUser?.subscription) {
-        throw new BadRequestError("Recipient has no active subscription");
-      }
-
-      const newUserDeviceCount = await Device.countDocuments({
-        UserId: newUserId,
-      });
-      if (newUserDeviceCount >= newUser.subscription.NoOfDecives) {
-        throw new BadRequestError("Recipient device limit reached");
-      }
-
-      const device = await Device.findByIdAndUpdate(
-        deviceId,
-        { UserId: newUserId, status: DeviceStatus.INACTIVE },
-        { new: true, session }
-      );
-
-      if (!device) throw new BadRequestError("Device not found");
-      await session.commitTransaction();
-      return device;
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
-  }
-
-  static async getUserDevices(userId: string): Promise<DeviceModel[]> {
-    return Device.find({ UserId: userId });
-  }
-
-  static async findByIMEI(imei: string, userId: string): Promise<DeviceModel> {
-    const device = await Device.findOne({
-      $or: [{ IMIE1: imei }, { IMEI2: imei }],
-      UserId: userId,
-    });
-
-    if (!device) throw new BadRequestError("Device not found");
-    return device;
   }
 
   static async transferDeviceByDetails(
@@ -117,37 +55,36 @@ export class DeviceService {
         SN: sn,
       }).session(session);
 
-      if (!device) {
-        throw new BadRequestError("Device not found");
-      }
-
+      if (!device) throw new BadRequestError("Device not found");
       if (device.UserId.toString() !== currentUserId) {
-        throw new BadRequestError("You do not own this device");
+        throw new BadRequestError("Unauthorized device transfer");
       }
 
       const newUser = await User.findOne({ email: newUserEmail.toLowerCase() })
-        .populate<{ subscription: SubscriptionModel }>("subscription")
+        .populate("subId")
         .session(session);
 
-      if (!newUser) {
-        throw new BadRequestError("Recipient not found");
-      }
-      if (!newUser.subActive || !newUser.subscription) {
+      if (!newUser) throw new BadRequestError("Recipient not found");
+
+      const newUserSubscription = newUser.subId as unknown as SubscriptionModel;
+      if (!newUser.subActive || !newUserSubscription) {
         throw new BadRequestError("Recipient has no active subscription");
       }
 
       if (newUser.subActiveTill && newUser.subActiveTill < new Date()) {
         throw new BadRequestError("Recipient subscription has expired");
       }
+
       const deviceCount = await Device.countDocuments({
         UserId: newUser._id,
       }).session(session);
 
-      if (deviceCount >= newUser.subscription.NoOfDecives) {
+      if (deviceCount >= newUserSubscription.NoOfDecives) {
         throw new BadRequestError(
-          `Recipient can only have ${newUser.subscription.NoOfDecives} devices`
+          `Recipient can only have ${newUserSubscription.NoOfDecives} devices`
         );
       }
+
       const updatedDevice = await Device.findByIdAndUpdate(
         device._id,
         {
@@ -155,11 +92,9 @@ export class DeviceService {
           status: DeviceStatus.INACTIVE,
         },
         { new: true, session }
-      ).session(session);
+      );
 
-      if (!updatedDevice) {
-        throw new BadRequestError("Transfer failed");
-      }
+      if (!updatedDevice) throw new BadRequestError("Transfer failed");
 
       await session.commitTransaction();
       return updatedDevice;
@@ -168,6 +103,44 @@ export class DeviceService {
       throw error;
     } finally {
       session.endSession();
+    }
+  }
+
+  static async getUserDevices(userId: string): Promise<DeviceModel[]> {
+    try {
+      const devices = await Device.find({ UserId: userId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return devices;
+    } catch (error) {
+      throw new BadRequestError("Failed to retrieve user devices");
+    }
+  }
+
+  static async updateDeviceStatus(
+    deviceId: string,
+    userId: string,
+    status: DeviceStatus
+  ): Promise<DeviceModel> {
+    try {
+      const updatedDevice = await Device.findOneAndUpdate(
+        { _id: deviceId, UserId: userId },
+        { status },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedDevice) {
+        throw new BadRequestError("Device not found or unauthorized");
+      }
+
+      return updatedDevice;
+    } catch (error) {
+      throw new BadRequestError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update device status"
+      );
     }
   }
 }

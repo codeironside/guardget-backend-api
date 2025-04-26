@@ -23,7 +23,7 @@ const userSchema = new Schema<UserModel>(
     role: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref:"Roles"
+      ref: "Roles",
     },
     country: {
       type: String,
@@ -52,6 +52,7 @@ const userSchema = new Schema<UserModel>(
     },
     subId: {
       type: Schema.Types.ObjectId,
+      ref: "Subscription",
     },
     subActive: { type: Boolean, default: false },
     subActiveTill: {
@@ -63,6 +64,18 @@ const userSchema = new Schema<UserModel>(
       type: String,
     },
   },
-  { timestamps: true, versionKey: false }
+  {
+    timestamps: true,
+    versionKey: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+userSchema.virtual("subscription", {
+  ref: "Subscription",
+  localField: "subId",
+  foreignField: "_id",
+  justOne: true,
+});
+
 export const User = model<UserModel>("User", userSchema);

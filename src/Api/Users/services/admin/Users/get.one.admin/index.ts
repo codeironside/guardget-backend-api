@@ -1,9 +1,27 @@
-import{ User} from "@/Api/Users/model/users";
+import { User } from "@/Api/Users/model/users";
 import { Receipt } from "@/Api/Financial/model";
 import { Device } from "@/Api/Device/models";
 import logger from "@/core/logger";
 import { BadRequestError } from "@/core/error";
 import { Request, Response } from "express";
+import { Types } from "mongoose";
+
+interface RecentUser {
+  _id: Types.ObjectId;
+  username: string;
+  email: string;
+  createdAt: Date;
+  subscriptionStatus: string;
+}
+
+
+interface RecentReceipt {
+  _id: Types.ObjectId;
+  user: Types.ObjectId;
+  amount: number;
+  status: string;
+  createdAt: Date;
+}
 
 export const getAdminDashboard = async (
   req: Request,
@@ -11,7 +29,6 @@ export const getAdminDashboard = async (
 ): Promise<void> => {
   try {
     const [users, devices, subscriptions, receipts] = await Promise.all([
- 
       User.aggregate([
         {
           $facet: {
@@ -35,8 +52,6 @@ export const getAdminDashboard = async (
           },
         },
       ]),
-
-      // Devices Summary
       Device.aggregate([
         {
           $facet: {
@@ -84,8 +99,6 @@ export const getAdminDashboard = async (
           },
         },
       ]),
-
- 
       Receipt.aggregate([
         {
           $facet: {
@@ -116,30 +129,40 @@ export const getAdminDashboard = async (
         },
       ]),
     ]);
+
+    // Type the aggregation results
     const response = {
       users: {
-        total: users[0].total[0]?.count || 0,
-        active: users[0].active[0]?.count || 0,
-        recent: users[0].recent,
+        total: users[0]?.total[0]?.count || 0,
+        active: users[0]?.active[0]?.count || 0,
+        recent: (users[0]?.recent || []) as RecentUser[],
       },
       devices: {
-        total: devices[0].total[0]?.count || 0,
-        byStatus: devices[0].byStatus,
-        recent: devices[0].recent,
+        total: devices[0]?.total[0]?.count || 0,
+        byStatus: devices[0]?.byStatus || [],
+        recent: devices[0]?.recent || [],
       },
       subscriptions: {
-        active: subscriptions[0].active[0]?.count || 0,
-        revenue: subscriptions[0].revenue[0] || { total: 0, monthly: 0 },
-        expiring: subscriptions[0].expiring[0]?.count || 0,
+        active: subscriptions[0]?.active[0]?.count || 0,
+        revenue: subscriptions[0]?.revenue[0] || { total: 0, monthly: 0 },
+        expiring: subscriptions[0]?.expiring[0]?.count || 0,
       },
       receipts: {
-        total: receipts[0].total[0]?.count || 0,
-        revenue: receipts[0].revenue[0] || { total: 0, monthly: 0 },
-        recent: receipts[0].recent,
+        total: receipts[0]?.total[0]?.count || 0,
+        revenue: receipts[0]?.revenue[0] || { total: 0, monthly: 0 },
+        recent: (receipts[0]?.recent || []) as RecentReceipt[],
       },
       recentActivity: [
-        ...users[0].recent.map((u) => ({ type: "user", ...u })),
-        ...receipts[0].recent.map((r) => ({ type: "receipt", ...r })),
+        ...(users[0]?.recent || []).map((u: RecentUser) => ({
+          type: "user",
+          ...u,
+          createdAt: u.createdAt.getTime(),
+        })),
+        ...(receipts[0]?.recent || []).map((r: RecentReceipt) => ({
+          type: "receipt",
+          ...r,
+          createdAt: r.createdAt.getTime(),
+        })),
       ]
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 10),
@@ -152,6 +175,10 @@ export const getAdminDashboard = async (
     });
   } catch (error) {
     logger.error(`Dashboard error: ${error}`);
-    throw new BadRequestError(`Dashboard error: ${error}`);
+    throw new BadRequestError(
+      `Dashboard error: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 };

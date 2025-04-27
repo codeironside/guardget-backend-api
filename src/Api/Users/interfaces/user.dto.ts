@@ -40,6 +40,7 @@ export interface UserModel extends Document {
   password: string;
   subId?: PopulatedDoc<SubscriptionModel>;
   subActiveTill: Date;
+  imageurl?: string;
   lastLogin: Date;
   createdAt: Date;
   updatedAt: Date;

@@ -8,15 +8,16 @@ import { authenticate } from "@/core/middleware/authmiddleware";
 import { getUser } from "../services/get.One.users";
 import { updateUser } from "../services/update.user";
 import { validateOtp } from "../services/valid.otp";
+import { uploadImage } from "../services/upload.profile.picture";
 
 export const userRouter = Router();
 
 userRouter.post("/create", userValidationSchema, createUser);
 userRouter.post("/login", loginUser);
-userRouter.post('/forgerpassword', forgetPassword)
+userRouter.post('/forgetpassword', forgetPassword)
 userRouter.post('/validateOtp', validateOtp)
 
-userRouter.use(authenticate)
-userRouter.get("/getme", getUser)
-userRouter.put("/upadate-user",updateUser)
+userRouter.get("/getme", authenticate,getUser);
+userRouter.put("/update-user", authenticate,updateUser)
+userRouter.put("/upload-profile-picture",authenticate, uploadImage)
 

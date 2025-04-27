@@ -42,7 +42,6 @@ export const updateUser = async (
     const devicesCount = await Device.countDocuments({ user: id });
     const formattedUser = {
       ...updatedUser,
-      role: updatedUser.role.toString(),
       devices: devicesCount,
       subActiveTill: updatedUser.subActive ? updatedUser.subActiveTill : null,
       subscriptionStatus: updatedUser.subActive ? "Active" : "Inactive",

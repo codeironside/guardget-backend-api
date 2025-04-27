@@ -90,6 +90,15 @@ export const userValidationSchema = checkSchema({
     },
     trim: true,
   },
+  keyholder: {
+    in: ["body"],
+    matches: {
+      options: [/^\+234[0-9]{10}$/],
+      errorMessage:
+        "key holder must be a valid Nigerian number starting with +234 followed by 10 digits",
+    },
+    trim: true,
+  },
   address: {
     in: ["body"],
     isLength: {

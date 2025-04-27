@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
 import { User } from "../../model/users";
-import { CreateUserDTO } from "../../interfaces/user.dto";
+import { Roles } from "../../model/roles/role";
+import { CreateUserDTO, OTP } from "../../interfaces/user.dto";
 import { OTPGenerator } from "@/core/utils/otpGenerator";
 import Logger from "@/core/logger";
-import WhatsAppService from "@/core/services/whatsapp";
-import { Roles } from "../../model/roles/role";
-import { BadRequestError } from "@/core/error/";
+import SMSService from "@/core/services/sms";
+import { BadRequestError } from "@/core/error";
 
 export const createUser = async (
   req: Request<{}, {}, CreateUserDTO>,
@@ -27,58 +28,47 @@ export const createUser = async (
       keyholder,
     } = req.body;
 
-    const roles = await Roles.findOne({
-      role,
-    });
-    const existingUser = await User.findOne({
+    const roleDoc = await Roles.findOne({name:role });
+    if (!roleDoc) throw new BadRequestError("Invalid role");
+
+    const conflict = await User.findOne({
       $or: [{ email }, { phoneNumber }, { username }],
     });
+    if (conflict) throw new BadRequestError("User already exists");
 
-    if (existingUser) {
-      throw new Error("User already exists");
-    }
     const otp = await OTPGenerator.generate();
-    const text = `welcome to guarget, this your OTP code ${otp}, please use it to verify your account, and do not disclose it.`;
+    const text = `Your Guardget confirmation code is ${otp}. Please don't share it with anyone else`;
 
-    const sentOTp = await WhatsAppService.sendMessage({
-      to: phoneNumber,
-      text,
-    });
-    if (sentOTp) {
-      console.log(`OTP sent successfully: ${JSON.stringify(sentOTp)}`);
-      req.session.user = {
-        otpCode: otp,
-        username,
-        firstName,
-        middleName,
-        surName,
-        role: roles?._id,
-        country,
-        stateOfOrigin,
-        phoneNumber,
-        address,
-        email,
-        password,
-      };
+    const sent = await SMSService.sendMessage({ to: phoneNumber, text });
+    if (!sent) throw new BadRequestError("Failed to send OTP");
 
-      Logger.warn(
-        `instantiated a user with ${email} not verified creation process`
-      );
-      res.status(201).json({
-        status: "success",
-        message: "otp sent please check your phone",
-        data: otp,
-      });
-    } else {
-      console.warn(`issues sending OTP: ${sentOTp}`);
-    }
-  } catch (error) {
-    console.error("Error creating user:", error);
-    req.session.destroy((err) => {
-      if (err) {
-        console.error("Error destroying session:", err);
-      }
-    });
-    throw new BadRequestError(`Error creating user: ${error}`);
+    req.session.user = {
+      otpCode: otp,
+      _id: null,
+      username,
+      firstName,
+      middleName,
+      surName,
+      role: roleDoc._id,
+      country,
+      stateOfOrigin,
+      phoneNumber,
+      address,
+      email,
+      password,
+      keyholder,
+      changepassword: false,
+    };
+
+    Logger.warn(`OTP sent to ${email}, user creation paused for verification`);
+    res
+      .status(201)
+      .json({ status: "success", message: "OTP sent; check your phone" });
+  } catch (err) {
+    Logger.error("Error creating user");
+    req.session.destroy(() => {});
+    throw new BadRequestError(
+      err instanceof Error ? err.message : "Error creating user"
+    );
   }
 };

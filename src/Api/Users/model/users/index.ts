@@ -51,6 +51,9 @@ const userSchema = new Schema<UserModel>(
       required: [true, "Keyholder is required"],
 
     },
+    imageurl: {
+      type: String,
+    },
     emailVerified: {
       type: Boolean,
       default: false,

@@ -19,7 +19,7 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
         }
         const isPasswordValid = bycrypt.compareSync(password, userExist.password);
         if (!isPasswordValid) {
-            throw new BadRequestError("invalid password");
+            throw new BadRequestError("invalid credentials");
         }
         const role = await Roles.findById(userExist.role);
         const token = await CryptoService.encryptId(userExist._id!.toString());
@@ -36,6 +36,7 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
             phoneNumber: userExist.phoneNumber,
             address: userExist.address,
             email: userExist.email,
+            imageurl: userExist.imageurl||"",
             emailVerified: userExist.emailVerified,
             subActive: userExist.subActive,
             subActiveTill: userExist.subActiveTill,
@@ -46,6 +47,6 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
         })
 
     }catch(error){
-        throw new BadRequestError("error logging you in");
+        throw new BadRequestError("invalid credentials");
     }
 }

@@ -31,6 +31,7 @@ declare module "express-session" {
       email?: string;
       password?: string;
       changepassword?: boolean;
+      keyholder?: string;
     };
   }
 }

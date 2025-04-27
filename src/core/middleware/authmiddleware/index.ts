@@ -12,7 +12,7 @@ export async function authenticate(
 ) {
   const header = req.header("Authorization");
   if (!header?.startsWith("Bearer ")) {
-    throw new AppError("No token provided", 401);
+    throw new AppError("Not Autorized", 401);
   }
 
   const token = header.substring(7);

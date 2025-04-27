@@ -17,7 +17,7 @@ export const getUser = async (
     const id  = req.userId;
 
     const user = await User.findById(id)
-      .select('-password')
+      .select('-password -role')
       .lean();
 
     if (!user) {
@@ -25,8 +25,6 @@ export const getUser = async (
     }
     const devicesCount = await Device.countDocuments({ user: id });
     const formattedUser = {
-      ...user,
-      role: user.role.toString(), 
       devices: devicesCount,
       subActiveTill: user.subActive ? user.subActiveTill : null,
       subscriptionStatus: user.subActive ? 'Active' : 'Inactive'

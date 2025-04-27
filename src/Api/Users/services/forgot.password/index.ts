@@ -3,6 +3,7 @@ import { User } from "../../model/users";
 import { BadRequestError } from "@/core/error";
 import { OTPGenerator } from "@/core/utils/otpGenerator";
 import SMSService from "@/core/services/sms";
+import logger from "@/core/logger";
 interface email {
   phoneNumber: string;
   password: string;
@@ -23,18 +24,25 @@ export const forgetPassword = async (
     }
 
     const otp = await OTPGenerator.generate();
-    const text = `welcome to guarget, this your OTP code ${otp}, please use it to verify your account, and do not disclose it.`;
+    const text = `your password reset code for guardget is ${otp} , please ignore if you did not request for this`;
     const to = phoneNumber;
     const sendOtp = await SMSService.sendMessage({ to, text });
     if (!sendOtp) {
       throw new BadRequestError("error sendind OTp");
     }
-    req.session.user = {_id:userExist._id, otpCode: otp, password, changepassword: true };
+    req.session.user = {
+      _id: userExist._id,
+      otpCode: otp,
+      password,
+      changepassword: true,
+    };
+    logger.info(`user with number ${phoneNumber} is trying to reset password`);
     res.status(201).json({
       status: "success",
       message: "otp sent please check your phone",
     });
   } catch (error) {
-    throw new BadRequestError("error ");
+    logger.error(`error sending otp ${error}`);
+    throw new BadRequestError("error updating password");
   }
 };

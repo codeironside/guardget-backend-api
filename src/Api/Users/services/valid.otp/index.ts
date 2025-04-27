@@ -4,7 +4,7 @@ import { Response, Request } from "express";
 import { OTP } from "../../interfaces/user.dto";
 import bcrypt from "bcrypt";
 import logger from "@/core/logger";
-
+import { day } from "@/core/utils/types/global";
 
 export const validateOtp = async (
   req: Request<{}, {}, OTP>,
@@ -12,14 +12,16 @@ export const validateOtp = async (
 ): Promise<void> => {
   try {
     const { otp } = req.body;
-    if (!otp && otp.length < 8) {
+    if (typeof otp !== "string" || otp.length < 1)
       throw new BadRequestError("OTP is required");
-    }
-    if (req.session.user?.otpCode !== otp) {
-      throw new BadRequestError("Invalid OTP");
-    }
-    req.session.user.otpCode = null;
+
+    const sessionUser = req.session.user;
+    if (!sessionUser || sessionUser.otpCode !== otp)
+      throw new BadRequestError("Invalid OTP, or session expired try again");
+
+    sessionUser.otpCode = null;
     const {
+      _id,
       username,
       firstName,
       middleName,
@@ -31,10 +33,14 @@ export const validateOtp = async (
       address,
       email,
       password,
-    } = req.session.user;
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hash(password!, salt);
-      if(!req.session.user.changepassword){  const createUser = await User.create({
+      changepassword,
+      keyholder,
+    } = sessionUser;
+
+    const hashed = await bcrypt.hash(password!, 10);
+
+    if (!changepassword) {
+      const newUser = await User.create({
         username,
         firstName,
         middleName,
@@ -45,38 +51,41 @@ export const validateOtp = async (
         phoneNumber,
         address,
         email,
-        password: hashedPassword,
+        keyholder,
+        password: hashed,
         emailVerified: true,
       });
-      if (!createUser) {
-        throw new BadRequestError("Error creating user");
-      }
-      logger.info(
-        `successfully created and validate user with email: ${email}`
+      if (!newUser) throw new BadRequestError("Error creating user");
+      logger.info(`Created user ${email}`);
+      res
+        .status(200)
+        .json({ status: "success", message: "User created successfully" });
+    } else {
+      if (!_id)
+        throw new BadRequestError(
+          "Session missing user ID for password change"
+        );
+      const updated = await User.findByIdAndUpdate(
+        _id,
+        { password: hashed },
+        { new: true }
       );
-      res.status(200).json({
-        status: "success",
-        message: "User created successfully",
-      });
-      } else {
-        const changedpassword = await User.findByIdAndUpdate(
-          req.session.user._id,
-          { password: hashedPassword },
-          { new: true }
-        );
-        if (!changedpassword) {
-          throw new BadRequestError("Error changing password");
-        }
-        logger.info(
-          `successfully changed password for user with email: ${email}`
-        );
-        res.status(200).json({
-          status: "success",
-          message: "Password changed successfully",
-        });
-      }
-  
-  } catch (error) {
-    throw new BadRequestError("Error validating OTP");
+      if (!updated) throw new BadRequestError("Error changing password");
+      logger.info(`Changed password for ${email}: user verified at ${day}`);
+      res
+        .status(200)
+        .json({ status: "success", message: "Password changed successfully" });
+    }
+    req.session.destroy((e) => {
+      if (e) throw new BadRequestError("Error destroying session");
+    });
+  } catch (err) {
+    req.session.destroy((e) => {
+      if (e) throw new BadRequestError("Error destroying session");
+    });
+    logger.error("Error validating OTP:");
+    throw new BadRequestError(
+      err instanceof Error ? err.message : "Error validating OTP"
+    );
   }
 };

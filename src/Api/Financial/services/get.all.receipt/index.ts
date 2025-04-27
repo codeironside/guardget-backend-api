@@ -22,11 +22,11 @@ export const getReceiptsForUsers = async (req: Request, res: Response) => {
     const userId = new mongoose.Types.ObjectId(req.userId);
 
     const receipts = await Receipt.find({ userId })
-      .sort({ createdAt: -1 }) // Newest first
+      .sort({ createdAt: -1 }) 
       .lean();
 
     if (!receipts || receipts.length === 0) {
-      return res.status(200).json({
+      res.status(200).json({
         status: "success",
         data: [],
         message: "No receipts found",

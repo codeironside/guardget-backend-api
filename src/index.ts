@@ -16,6 +16,7 @@ import { GracefulShutdown } from "@/core/utils/gracefulShutDown";
 import { API_SUFFIX } from "@/core/utils/types/global";
 import { day } from "@/core/utils/types/global";
 import limiter from "./core/utils/ratelimiter";
+import path from "path";
 
 const app = express();
 
@@ -49,6 +50,13 @@ process.on("unhandledRejection", (reason, promise) => {
     console.log(chalk.blue("Connecting to database..."));
     const server = http.createServer(app);
     Db.connect();
+    app.use(
+      "/",
+      express.static(path.join(process.cwd(), "public"), {
+        maxAge: "1d",
+        index: false,
+      })
+    );
     server.listen(config.PORT, () => {
       console.log(
         day,

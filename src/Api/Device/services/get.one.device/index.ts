@@ -16,7 +16,7 @@ export const getDevice = async (req: Request, res: Response) => {
     if (!mongoose.Types.ObjectId.isValid(deviceId)) {
       throw new BadRequestError("Invalid device ID");
     }
-    const device = await Device.findById(userId).populate(
+    const device = await Device.findById(deviceId).populate(
       "UserId",
       "username email phoneNumber"
     );

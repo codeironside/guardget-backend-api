@@ -98,7 +98,6 @@ class SMSService {
     to,
     text,
   }: SendSMSPayload): Promise<TermiiSMSResponse> {
-    
     const url = `${this.baseUrl}/api/sms/send`;
 
     const body = {
@@ -116,6 +115,8 @@ class SMSService {
         "Content-Type": "application/json",
       },
     });
+
+    
 
     if (response.data.balance < 1) {
       throw new BadRequestError("Insufficient SMS credit");

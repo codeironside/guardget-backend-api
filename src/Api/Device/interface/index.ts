@@ -11,8 +11,6 @@ export interface DeviceModel {
   status: string;
 }
 
-
-
 export enum DeviceStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -20,14 +18,13 @@ export enum DeviceStatus {
   STOLEN = "stolen",
 }
 
-
-
 export interface DeviceCreateDTO {
   name: string;
   IMIE1: string;
   IMEI2?: string;
   SN: string;
   Type: string;
+  status: string;
 }
 
 export interface DeviceTransferDto {
@@ -53,9 +50,9 @@ export interface DeviceResponse {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-    user: {
-    id: string,
-    username: string,
-    email: string,
-  }
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
 }

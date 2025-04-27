@@ -12,7 +12,7 @@ deviceRouter.use(authenticate);
 
 deviceRouter.post("/", createDevice);
 deviceRouter.get("/", getAllDevices);
-deviceRouter.get("/:deviceId", getDevice);
+deviceRouter.get("/device/:deviceId", getDevice);
 deviceRouter.get("/search", searchByIMEI);
 deviceRouter.put("/transferOwnership", transferDevice);
-deviceRouter.put("/updatestatus",updateDeviceStatus)
+deviceRouter.put("/updatestatus/:deviceId", updateDeviceStatus);

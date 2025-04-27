@@ -10,7 +10,6 @@ export class DeviceService {
   static async validateDeviceLimit(userId: string): Promise<void> {
     const user = await User.findById(userId).populate("subId").exec();
     const subscription = user?.subId as unknown as SubscriptionModel;
-
     if (!subscription) {
       throw new BadRequestError("No active subscription");
     }
@@ -25,16 +24,38 @@ export class DeviceService {
     try {
       session.startTransaction();
 
-      const device = await Device.create([data], { session });
-      const populatedDevice = await Device.findById(device[0]._id)
+      // Uniqueness checks
+      const conflicts = await Device.findOne(
+        {
+          $or: [
+            { IMIE1: data.IMIE1 },
+            data.IMEI2 ? { IMEI2: data.IMEI2 } : null,
+            { SN: data.SN },
+          ].filter(Boolean) as any[],
+        },
+        null,
+        { session }
+      );
+      if (conflicts) {
+        const field =
+          conflicts.IMIE1 === data.IMIE1
+            ? "IMIE1"
+            : conflicts.IMEI2 === data.IMEI2
+            ? "IMEI2"
+            : "SN";
+        throw new BadRequestError(`${field} already in use`);
+      }
+
+      const [created] = await Device.create([data], { session });
+      const populated = await Device.findById(created._id)
         .populate("UserId", "username email")
         .session(session);
 
       await session.commitTransaction();
-      return populatedDevice!;
-    } catch (error) {
+      return populated!;
+    } catch (err) {
       await session.abortTransaction();
-      throw error;
+      throw err;
     } finally {
       session.endSession();
     }

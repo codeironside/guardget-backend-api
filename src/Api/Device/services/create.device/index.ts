@@ -19,7 +19,7 @@ export const createDevice = async (req: Request, res: Response) => {
     const device = await DeviceService.createDevice({
       ...dto,
       UserId: userId,
-      status: DeviceStatus.ACTIVE,
+    
     });
 
     Logger.info(`Device created: ${device._id}`);
@@ -28,6 +28,7 @@ export const createDevice = async (req: Request, res: Response) => {
       data: mapToDeviceResponse(device),
     });
   } catch (error) {
+    
     Logger.error(`Device creation failed: ${error}`);
     throw new BadRequestError(
       "Device creation failed or No Active Subscription"

@@ -5,6 +5,7 @@ import { BadRequestError } from "@/core/error";
 import mongoose from "mongoose";
 import Logger from "@/core/logger";
 import { z } from "zod";
+import { User } from "@/Api/Users/model/users";
 
 
 
@@ -25,13 +26,17 @@ export const transferDevice = async (req: Request, res: Response) => {
       currentUserId,
       newUserEmail
     );
-
-    Logger.info(`Device transferred: ${imei}`);
+    const user = await User.findOne({email:newUserEmail})
+      .select("firstName middleName surName email phoneNumber")
+      .lean();
+    Logger.info(`Device transferred: ${imei} to ${user}`);
+    
     res.json({
       status: "success",
+      message:`Transfer successful to ${user!.firstName}`,
       data: {
         deviceId: device._id,
-        newOwner: device.UserId,
+        newOwnername: user,
         status: device.status,
       },
     });

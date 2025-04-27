@@ -5,7 +5,6 @@ export enum DeviceStatus {
   INACTIVE = "inactive",
   LOST = "lost",
   STOLEN = "stolen",
-  
 }
 
 const deviceSchema = new Schema<DeviceModel>(
@@ -24,6 +23,7 @@ const deviceSchema = new Schema<DeviceModel>(
       type: String,
       enum: Object.values(DeviceStatus),
       default: DeviceStatus.ACTIVE,
+      required: [true, "device must have a status"],
     },
   },
   { timestamps: true }

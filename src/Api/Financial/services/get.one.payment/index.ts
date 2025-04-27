@@ -14,15 +14,17 @@ interface ReceiptResponse {
   receiptNumber: string;
   duration: number;
   durationUnit: string;
+  subscriptionName: string;
   createdAt: string;
   updatedAt: string;
+  
 }
 
 export const getOneReceiptForUser = async (req: Request, res: Response) => {
   try {
     const receiptId = req.params.id;
     const userId = new mongoose.Types.ObjectId(req.userId);
-
+    console.log(`receipt ID: ${JSON.stringify(req.params)}`);
     if (!mongoose.Types.ObjectId.isValid(receiptId)) {
       throw new BadRequestError("Invalid receipt ID format");
     }
@@ -30,7 +32,7 @@ export const getOneReceiptForUser = async (req: Request, res: Response) => {
     const receipt = await Receipt.findOne({
       _id: receiptId,
       userId: userId,
-    }).lean();
+    }).populate<{subscriptionId:{name:string}}>("subscriptionId", "name").lean();
 
     if (!receipt) {
       throw new BadRequestError("Receipt not found or unauthorized access");
@@ -43,6 +45,7 @@ export const getOneReceiptForUser = async (req: Request, res: Response) => {
       description: receipt.description,
       status: receipt.status,
       receiptNumber: receipt.receiptNumber,
+      subscriptionName: receipt.subscriptionId?.name,
       duration: receipt.duration,
       durationUnit: receipt.durationUnit,
       createdAt: receipt.createdAt.toISOString(),

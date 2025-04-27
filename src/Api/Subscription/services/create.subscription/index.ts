@@ -9,14 +9,14 @@ export const createSubscription = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { name, NoOfDecives, price } = req.body;
+    const { name, NoOfDevices, price, description } = req.body;
 
     const existingSub = await Subscription.findOne({ name });
     if (existingSub) {
       throw new BadRequestError("Subscription with this name already exists");
     }
 
-    if (NoOfDecives <= 0 || price <= 0) {
+    if (NoOfDevices <= 0 || price <= 0) {
       throw new BadRequestError(
         "Devices count and price must be positive values"
       );
@@ -24,8 +24,9 @@ export const createSubscription = async (
 
     const newSubscription = await Subscription.create({
       name,
-      NoOfDecives,
+      NoOfDevices,
       price,
+      description,
     });
 
     Logger.info(`Created new subscription: ${name}`);
@@ -39,5 +40,3 @@ export const createSubscription = async (
     throw new BadRequestError(`Error creating subscription: ${error}`);
   }
 };
-
-

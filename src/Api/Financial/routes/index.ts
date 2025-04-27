@@ -9,16 +9,16 @@ const paymentController = new PaymentController();
 financialRouter.use(authenticate)
 
 financialRouter.post(
-  "/payments/initialize",
+  "/initialize",
   paymentController.initializePayment.bind(paymentController)
 );
 
 financialRouter.post(
-  "/payments/callback",
+  "/callback",
   paymentController.handlePaymentCallback.bind(paymentController)
 );
 financialRouter.get("/getallreceiptforuser", getReceiptsForUsers);
 
-financialRouter.get("/getoneforuser", getOneReceiptForUser)
+financialRouter.get("/getoneforuser/:id", getOneReceiptForUser)
 
        

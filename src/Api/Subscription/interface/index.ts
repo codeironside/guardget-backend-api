@@ -3,7 +3,8 @@ import { Types } from "mongoose";
 export interface SubscriptionModel{
     _id: Types.ObjectId;
     name: string;
-    NoOfDecives: number;
+    NoOfDevices: number;
     price: number;
+    description:string;
 
 }

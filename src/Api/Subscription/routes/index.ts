@@ -9,14 +9,17 @@ import { updateSubscription } from '../services/update.sub'
 
 export const subscriptionRouter = Router()
 
-subscriptionRouter.use(authenticate)
-RoleGuard.allow('admin', 'user')
 
-subscriptionRouter.post("/createSubcription", createSubscription)
-subscriptionRouter.delete("/deleteSubscription", deleteSubscription)
-subscriptionRouter.get("/getallSubscription", getAllSubscriptions)
-subscriptionRouter.get("/getOneSubscription/:id", getOneSubscription)
-subscriptionRouter.put("/updateSubscription/:id", updateSubscription)
+
+//public routes
+subscriptionRouter.get("/getallSubscription", getAllSubscriptions);
+subscriptionRouter.get("/getOneSubscription/:id", getOneSubscription);
+
+
+
+subscriptionRouter.post("/createSubcription",authenticate, RoleGuard.allow('admin'),createSubscription)
+subscriptionRouter.delete("/deleteSubscription/:id",authenticate , RoleGuard.allow('admin'),authenticate, deleteSubscription)
+subscriptionRouter.put("/updateSubscription/:id",authenticate, RoleGuard.allow('admin','user'),authenticate, updateSubscription)
 
 
 

@@ -30,7 +30,7 @@ const ReceiptSchema = new Schema<ReceiptModel>(
     },
     subscriptionId: {
       type: Schema.Types.ObjectId,
-      ref: "Subscriptions",
+      ref: "Subscription",
       required: true,
     },
   },

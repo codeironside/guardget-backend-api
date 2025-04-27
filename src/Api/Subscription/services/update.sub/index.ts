@@ -25,7 +25,7 @@ export const updateSubscription = async (
     }
 
     // Validate numbers
-    if (updateData.NoOfDecives && updateData.NoOfDecives <= 0) {
+    if (updateData.NoOfDevices && updateData.NoOfDevices <= 0) {
       throw new BadRequestError("Device count must be a positive value");
     }
     if (updateData.price && updateData.price <= 0) {

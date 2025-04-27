@@ -29,7 +29,9 @@ export const createDevice = async (req: Request, res: Response) => {
     });
   } catch (error) {
     Logger.error(`Device creation failed: ${error}`);
-    throw new BadRequestError("Device creation failed");
+    throw new BadRequestError(
+      "Device creation failed or No Active Subscription"
+    );
   }
 };
 

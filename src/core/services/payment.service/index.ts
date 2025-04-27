@@ -13,8 +13,9 @@ const PAYSTACK_SECRET_KEY = config.PAYSTACK_SECRET_KEY!;
 
 interface PaymentSession {
   userId: mongoose.Types.ObjectId;
+  subId: mongoose.Types.ObjectId;
   duration: number;
-  durationUnit: "days" | "months" | "years";
+  durationUnit: "months" | "years";
   amount: number;
   reference: string;
   status: "pending" | "completed" | "failed";
@@ -25,13 +26,13 @@ export class PaymentService {
 
   async initializePayment(
     userId: mongoose.Types.ObjectId,
+    subId: mongoose.Types.ObjectId,
     duration: number,
-    durationUnit: "days" | "months" | "years",
+    durationUnit: "months" | "years",
     amount: number,
     email: string
   ): Promise<{ authorizationUrl: string; reference: string }> {
     const reference = uuidv4();
-
     try {
       const response = await axios.post(
         "https://api.paystack.co/transaction/initialize",
@@ -43,6 +44,7 @@ export class PaymentService {
             userId: userId.toString(),
             duration,
             durationUnit,
+            subId: subId.toString(),
           },
         },
         {
@@ -55,6 +57,7 @@ export class PaymentService {
 
       this.paymentSessions.set(reference, {
         userId,
+        subId,
         duration,
         durationUnit,
         amount,
@@ -67,7 +70,7 @@ export class PaymentService {
         reference,
       };
     } catch (error) {
-      logger.error(`Payment initialization failed:${error}`);
+      logger.error(`Payment initialization failed: ${error}`);
       throw new BadRequestError("Failed to initialize payment");
     }
   }
@@ -93,8 +96,9 @@ export class PaymentService {
         }
       );
 
-      if (verification.data.data.status !== "success") {
+      if (verification.data.data.status === "success") {
         paymentSession.status = "failed";
+        await session.abortTransaction();
         throw new BadRequestError("Payment failed");
       }
 
@@ -102,7 +106,6 @@ export class PaymentService {
       if (!user) {
         throw new BadRequestError("User not found");
       }
-
 
       const [receipt] = await Receipt.create(
         [
@@ -114,11 +117,29 @@ export class PaymentService {
             receiptNumber: reference,
             userId: paymentSession.userId,
             duration: paymentSession.duration,
+            subscriptionId: paymentSession.subId,
             durationUnit: paymentSession.durationUnit,
           },
         ],
         { session }
       );
+
+      const baseDate =
+        user.subActiveTill && user.subActiveTill > new Date()
+          ? user.subActiveTill
+          : new Date();
+
+      const expiry = new Date(baseDate);
+      if (paymentSession.durationUnit === "months") {
+        expiry.setMonth(expiry.getMonth() + paymentSession.duration);
+      } else {
+        expiry.setFullYear(expiry.getFullYear() + paymentSession.duration);
+      }
+
+      user.subActive = true;
+      user.subActiveTill = expiry;
+      user.subId = paymentSession.subId;
+      await user.save({ session });
 
       this.paymentSessions.delete(reference);
       await session.commitTransaction();
@@ -126,7 +147,7 @@ export class PaymentService {
       return receipt;
     } catch (error) {
       await session.abortTransaction();
-      logger.error(`Payment verification failed ${error}`);
+      logger.error(`Payment verification failed: ${error}`);
       throw new BadRequestError(
         error instanceof Error ? error.message : "Payment verification failed"
       );

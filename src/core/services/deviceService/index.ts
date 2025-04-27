@@ -16,7 +16,7 @@ export class DeviceService {
     }
 
     const deviceCount = await Device.countDocuments({ UserId: userId });
-    if (deviceCount >= subscription.NoOfDecives) {
+    if (deviceCount >= subscription.NoOfDevices) {
       throw new BadRequestError("Device limit reached");
     }
   }
@@ -79,9 +79,9 @@ export class DeviceService {
         UserId: newUser._id,
       }).session(session);
 
-      if (deviceCount >= newUserSubscription.NoOfDecives) {
+      if (deviceCount >= newUserSubscription.NoOfDevices) {
         throw new BadRequestError(
-          `Recipient can only have ${newUserSubscription.NoOfDecives} devices`
+          `Recipient can only have ${newUserSubscription.NoOfDevices} devices`
         );
       }
 

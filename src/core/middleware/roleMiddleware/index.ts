@@ -24,7 +24,6 @@ export class RoleGuard {
         if (!role) {
           throw new BadRequestError("Role not found");
         }
-
         if (!allowedRoles.includes(role.name)) {
           throw new BadRequestError("Forbidden");
         }

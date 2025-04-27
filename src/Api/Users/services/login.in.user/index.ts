@@ -5,6 +5,7 @@ import { BadRequestError } from "@/core/error";
 import bycrypt from "bcrypt";
 import CryptoService from "@/core/services/encryption";
 import { Roles } from "../../model/roles/role";
+import logger from "@/core/logger";
 
 
 export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): Promise<void> => { 
@@ -41,6 +42,7 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
             subActive: userExist.subActive,
             subActiveTill: userExist.subActiveTill,
         };
+        logger.info(`user with id ${userExist._id} logged in successfully`);
         res.status(201).json({
             status: "success",
             data:user

@@ -9,7 +9,7 @@ export interface ReceiptModel extends Document {
   receiptNumber: string;
   userId: mongoose.Types.ObjectId;
   duration: number;
-  durationUnit: "days" | "months" | "years";
+  durationUnit: "months" | "years";
   createdAt: Date;
   updatedAt: Date;
 }

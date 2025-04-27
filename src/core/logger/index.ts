@@ -101,6 +101,12 @@ class Logger {
   public debug(msg: string) {
     this.logger.debug(msg);
   }
+  public silly(msg: string) {
+    this.logger.silly(msg);
+  }
+  public http(msg: string) {
+    this.logger.http(msg);
+  }
 }
 
 export default new Logger();

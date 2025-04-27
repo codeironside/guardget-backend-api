@@ -4,11 +4,12 @@ import { SubscriptionModel } from "../interface";
 const subcriptionSchema = new Schema<SubscriptionModel>(
   {
     name: { type: String, required: [true, "Name is required"] },
-    NoOfDecives: {
+    NoOfDevices: {
       type: Number,
       required: [true, "No of devices is required"],
     },
     price: { type: Number, required: [true, "Price is required"] },
+    description: { type: String, required: [true, "Description is required"] },
   },
   { timestamps: true }
 );

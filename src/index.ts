@@ -18,9 +18,10 @@ import { day } from "@/core/utils/types/global";
 import limiter from "./core/utils/ratelimiter";
 import path from "path";
 
+
 const app = express();
 
-console.log(chalk.blue("🚀 Starting server..."));
+// app.set("trust proxy", true);
 
 app.use(express.json());
 app.use(session(sessionMiddleware));

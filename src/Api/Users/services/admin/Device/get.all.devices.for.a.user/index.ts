@@ -18,12 +18,12 @@ export const getUserDevices = async (
 
     const devices = await Device.aggregate([
       {
-        $match: { user: new mongoose.Types.ObjectId(userId) },
+        $match: { UserId: new mongoose.Types.ObjectId(userId) },
       },
       {
         $lookup: {
           from: "users",
-          localField: "user",
+          localField: "UserId",
           foreignField: "_id",
           as: "user",
           pipeline: [
@@ -31,6 +31,7 @@ export const getUserDevices = async (
               $project: {
                 username: 1,
                 email: 1,
+                imageurl:1,
                 subscriptionStatus: {
                   $cond: ["$subActive", "Active", "Inactive"],
                 },

@@ -22,7 +22,7 @@ export const getUserReceipts = async (
 
     const receipts = await Receipt.aggregate([
       {
-        $match: { user: new mongoose.Types.ObjectId(userId) },
+        $match: { userId: new mongoose.Types.ObjectId(userId) },
       },
       {
         $project: {

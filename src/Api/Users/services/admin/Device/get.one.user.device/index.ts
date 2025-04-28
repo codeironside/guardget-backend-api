@@ -19,13 +19,13 @@ export const getOneUserDevice = async (
       {
         $match: {
           _id: new mongoose.Types.ObjectId(deviceId),
-          user: new mongoose.Types.ObjectId(userId),
+          UserId: new mongoose.Types.ObjectId(userId),
         },
       },
       {
         $lookup: {
           from: "users",
-          localField: "user",
+          localField: "UserId",
           foreignField: "_id",
           as: "user",
           pipeline: [
@@ -33,6 +33,7 @@ export const getOneUserDevice = async (
               $project: {
                 username: 1,
                 email: 1,
+                imageurl:1,
                 subscriptionStatus: {
                   $cond: ["$subActive", "Active", "Inactive"],
                 },

@@ -1,20 +1,23 @@
 import { Receipt } from "@/Api/Financial/model";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import logger from "@/core/logger";
-import { User } from "@/Api/Users/model/users";
 import { BadRequestError } from "@/core/error";
-
 
 export const getAllReceipts = async (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
   try {
-    const receipts = await Receipt.aggregate([
+    const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit as string, 10) || 20);
+    const skip = (page - 1) * limit;
+
+    const agg = Receipt.aggregate([
       {
         $lookup: {
           from: "users",
-          localField: "user",
+          localField: "userId",
           foreignField: "_id",
           as: "user",
           pipeline: [
@@ -23,6 +26,7 @@ export const getAllReceipts = async (
                 username: 1,
                 email: 1,
                 phoneNumber: 1,
+                imageurl: 1,
                 subscriptionStatus: {
                   $cond: ["$subActive", "Active", "Inactive"],
                 },
@@ -51,15 +55,43 @@ export const getAllReceipts = async (
         },
       },
       { $sort: { createdAt: -1 } },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: skip }, { $limit: limit }],
+        },
+      },
+      {
+        $unwind: {
+          path: "$metadata",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          total: "$metadata.total",
+          data: 1,
+        },
+      },
     ]);
 
-    logger.info("Fetched all receipts");
+    const [result] = await agg.exec();
+    const total = result?.total ?? 0;
+    const receipts = result?.data ?? [];
+
+    logger.info("Fetched paginated receipts");
     res.status(200).json({
       status: "success",
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
       data: receipts,
     });
   } catch (error) {
     logger.error(`Error fetching receipts: ${error}`);
-    throw new BadRequestError(`Error fetching receipts: ${error}`);
+    next(new BadRequestError(`Error fetching receipts: ${error}`));
   }
 };

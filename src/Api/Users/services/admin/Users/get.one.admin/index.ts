@@ -1,40 +1,83 @@
+// src/Api/Users/services/admin/Users/get.one.admin/index.ts
+import { Request, Response } from "express";
 import { User } from "@/Api/Users/model/users";
-import { Receipt } from "@/Api/Financial/model";
 import { Device } from "@/Api/Device/models";
+import { Receipt } from "@/Api/Financial/model";
 import logger from "@/core/logger";
 import { BadRequestError } from "@/core/error";
-import { Request, Response } from "express";
-import { Types } from "mongoose";
 
-interface RecentUser {
-  _id: Types.ObjectId;
-  username: string;
-  email: string;
-  createdAt: Date;
-  subscriptionStatus: string;
+interface UserFacets {
+  totalUsers: { count: number }[];
+  activeUsers: { count: number }[];
+  subscriptionTiers: { _id: string; count: number }[];
+  recentUsers: {
+    _id: string;
+    username: string;
+    email: string;
+    createdAt: Date;
+    subscriptionStatus: string;
+  }[];
 }
 
-
-interface RecentReceipt {
-  _id: Types.ObjectId;
-  user: Types.ObjectId;
-  amount: number;
-  status: string;
-  createdAt: Date;
+interface DeviceFacets {
+  totalDevices: { count: number }[];
+  byStatus: { _id: string; count: number }[];
+  byType: { _id: string; count: number }[];
+  recentDevices: {
+    _id: string;
+    name: string;
+    status: string;
+    createdAt: Date;
+  }[];
 }
 
-export const getAdminDashboard = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+interface ReceiptFacets {
+  totalReceipts: { count: number }[];
+  totalRevenue: { revenue: number }[];
+  recentReceipts: {
+    _id: string;
+    userId: string;
+    amount: number;
+    status: string;
+    createdAt: Date;
+  }[];
+}
+
+const getFirstValue = <T>(arr?: T[]): T | undefined => arr?.[0];
+
+export const getAdminDashboard = async (req: Request, res: Response): Promise<void> => {
   try {
-    const [users, devices, subscriptions, receipts] = await Promise.all([
-      User.aggregate([
+    const [users, devices, receipts] = await Promise.all([
+      User.aggregate<UserFacets>([
         {
           $facet: {
-            total: [{ $count: "count" }],
-            active: [{ $match: { subActive: true } }, { $count: "count" }],
-            recent: [
+            totalUsers: [{ $count: "count" }],
+            activeUsers: [{ $match: { subActive: true } }, { $count: "count" }],
+            subscriptionTiers: [
+              {
+                $lookup: {
+                  from: "subscriptions",
+                  localField: "subId",
+                  foreignField: "_id",
+                  as: "subscription",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$subscription",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+              {
+                $group: {
+                  _id: {
+                    $ifNull: ["$subscription.name", "No Subscription"],
+                  },
+                  count: { $sum: 1 },
+                },
+              },
+            ],
+            recentUsers: [
               { $sort: { createdAt: -1 } },
               { $limit: 5 },
               {
@@ -44,7 +87,11 @@ export const getAdminDashboard = async (
                   email: 1,
                   createdAt: 1,
                   subscriptionStatus: {
-                    $cond: ["$subActive", "Active", "Inactive"],
+                    $cond: {
+                      if: "$subActive",
+                      then: "Active",
+                      else: "Inactive",
+                    },
                   },
                 },
               },
@@ -52,73 +99,38 @@ export const getAdminDashboard = async (
           },
         },
       ]),
-      Device.aggregate([
+      // Corrected Device aggregation
+      // Corrected Device aggregation
+      Device.aggregate<DeviceFacets>([
         {
           $facet: {
-            total: [{ $count: "count" }],
-            byStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }],
-            recent: [
+            totalDevices: [{ $count: "count" }],
+            byStatus: [{ $group: { _id: "$status", count: { $sum: 1 } } }], // Added double closing braces
+            byType: [{ $group: { _id: "$Type", count: { $sum: 1 } } }], // Added double closing braces
+            recentDevices: [
+              { $sort: { createdAt: -1 } },
+              { $limit: 5 },
+              { $project: { _id: 1, name: 1, status: 1, createdAt: 1 } },
+            ],
+          },
+        },
+      ]),
+
+      // Corrected Receipt aggregation
+      Receipt.aggregate<ReceiptFacets>([
+        {
+          $facet: {
+            totalReceipts: [{ $count: "count" }],
+            totalRevenue: [
+              { $group: { _id: null, revenue: { $sum: "$amount" } } },
+            ], // Added double closing braces
+            recentReceipts: [
               { $sort: { createdAt: -1 } },
               { $limit: 5 },
               {
                 $project: {
                   _id: 1,
-                  deviceId: 1,
-                  user: 1,
-                  status: 1,
-                  lastActive: 1,
-                },
-              },
-            ],
-          },
-        },
-      ]),
-      User.aggregate([
-        {
-          $facet: {
-            active: [{ $match: { subActive: true } }, { $count: "count" }],
-            revenue: [
-              { $match: { subActive: true } },
-              {
-                $group: {
-                  _id: null,
-                  total: { $sum: "$subAmount" },
-                  monthly: { $sum: "$subMonthlyAmount" },
-                },
-              },
-            ],
-            expiring: [
-              {
-                $match: {
-                  subActive: true,
-                  subActiveTill: { $lte: new Date(Date.now() + 30 * 86400000) },
-                },
-              },
-              { $count: "count" },
-            ],
-          },
-        },
-      ]),
-      Receipt.aggregate([
-        {
-          $facet: {
-            total: [{ $count: "count" }],
-            revenue: [
-              {
-                $group: {
-                  _id: null,
-                  total: { $sum: "$amount" },
-                  monthly: { $sum: "$monthlyAmount" },
-                },
-              },
-            ],
-            recent: [
-              { $sort: { createdAt: -1 } },
-              { $limit: 5 },
-              {
-                $project: {
-                  _id: 1,
-                  user: 1,
+                  userId: 1,
                   amount: 1,
                   status: 1,
                   createdAt: 1,
@@ -130,55 +142,37 @@ export const getAdminDashboard = async (
       ]),
     ]);
 
-    // Type the aggregation results
     const response = {
       users: {
-        total: users[0]?.total[0]?.count || 0,
-        active: users[0]?.active[0]?.count || 0,
-        recent: (users[0]?.recent || []) as RecentUser[],
+        total: getFirstValue(users[0]?.totalUsers)?.count ?? 0,
+        active: getFirstValue(users[0]?.activeUsers)?.count ?? 0,
+        subscriptionTiers: users[0]?.subscriptionTiers ?? [],
+        recent: users[0]?.recentUsers ?? []
       },
       devices: {
-        total: devices[0]?.total[0]?.count || 0,
-        byStatus: devices[0]?.byStatus || [],
-        recent: devices[0]?.recent || [],
-      },
-      subscriptions: {
-        active: subscriptions[0]?.active[0]?.count || 0,
-        revenue: subscriptions[0]?.revenue[0] || { total: 0, monthly: 0 },
-        expiring: subscriptions[0]?.expiring[0]?.count || 0,
+        total: getFirstValue(devices[0]?.totalDevices)?.count ?? 0,
+        byStatus: devices[0]?.byStatus ?? [],
+        byType: devices[0]?.byType ?? [],
+        recent: devices[0]?.recentDevices ?? []
       },
       receipts: {
-        total: receipts[0]?.total[0]?.count || 0,
-        revenue: receipts[0]?.revenue[0] || { total: 0, monthly: 0 },
-        recent: (receipts[0]?.recent || []) as RecentReceipt[],
-      },
-      recentActivity: [
-        ...(users[0]?.recent || []).map((u: RecentUser) => ({
-          type: "user",
-          ...u,
-          createdAt: u.createdAt.getTime(),
-        })),
-        ...(receipts[0]?.recent || []).map((r: RecentReceipt) => ({
-          type: "receipt",
-          ...r,
-          createdAt: r.createdAt.getTime(),
-        })),
-      ]
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, 10),
+        total: getFirstValue(receipts[0]?.totalReceipts)?.count ?? 0,
+        revenue: getFirstValue(receipts[0]?.totalRevenue)?.revenue ?? 0,
+        recent: receipts[0]?.recentReceipts ?? []
+      }
     };
 
-    logger.info("Admin dashboard data fetched");
-    res.status(200).json({
-      status: "success",
-      data: response,
-    });
+    logger.info("Admin dashboard fetched");
+    res.status(200).json(response);
   } catch (error) {
-    logger.error(`Dashboard error: ${error}`);
-    throw new BadRequestError(
-      `Dashboard error: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const data ={ message, stack: error instanceof Error ? error.stack : undefined }
+    logger.error(`${data}`);
+    
+    const status = error instanceof BadRequestError ? 400 : 500;
+    res.status(status).json({ 
+      status: status === 400 ? "Bad Request" : "Error",
+      message: status === 400 ? message : "Internal server error"
+    });
   }
 };

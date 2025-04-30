@@ -1,0 +1,188 @@
+Routes Breakdown and Response Structures
+
+1. Admin Routes (src/Api/Users/services/admin/routes/index.ts)
+--------------------------------------------------------------
+- User Management:
+  - GET /getalluser
+    Description: Retrieves paginated list of all users with role and device count.
+    Response:
+      {
+        status: "success",
+        data: [ 
+          {
+            _id: string,
+            username: string,
+            email: string,
+            role: string,
+            devicesCount: number,
+            subActiveTill: Date | null,
+            subscriptionStatus: "Active" | "Inactive",
+            ...
+          },
+          ...
+        ],
+        pagination: {
+          total: number,
+          page: number,
+          limit: number,
+          totalPages: number
+        }
+      }
+  - POST /createadmin
+    Description: Creates a new admin user.
+    Response: (Not detailed in code, likely success status and created admin data)
+  - GET /getOneself
+    Description: Retrieves admin dashboard info for the logged-in admin.
+  - GET /getoneuser/:id
+    Description: Retrieves details of a single user by ID.
+  - PUT /updateuser/:id
+    Description: Updates user details by ID.
+
+- Device Management:
+  - GET /getdeVices
+    Description: Retrieves all devices.
+    Response:
+      {
+        status: "success",
+        data: [
+          {
+            id: string,
+            name: string,
+            IMIE1: string,
+            IMEI2: string,
+            SN: string,
+            Type: string,
+            status: string,
+            user: {
+              id: string,
+              username: string,
+              email: string
+            },
+            createdAt: Date
+          },
+          ...
+        ]
+      }
+  - GET /getallforauser/:userId
+    Description: Retrieves all devices for a specific user.
+  - GET /getOneDevice/:userId/devices/:deviceId
+    Description: Retrieves a specific device for a user.
+
+- Receipt Management:
+  - GET /getAllreceipt
+    Description: Retrieves all receipts.
+  - GET /getUserReceipts/:userId
+    Description: Retrieves all receipts for a specific user.
+  - GET /getOneReceipt/:receiptId
+    Description: Retrieves a single receipt by ID.
+    Response:
+      {
+        status: "success",
+        data: {
+          _id: string,
+          amount: number,
+          currency: string,
+          status: string,
+          paymentMethod: string,
+          transactionId: string,
+          createdAt: Date,
+          user: {
+            username: string,
+            email: string,
+            phoneNumber: string,
+            subscriptionStatus: "Active" | "Inactive"
+          },
+          formattedDetails: {
+            amount: number,
+            date: string,
+            time: string
+          }
+        }
+      }
+
+2. Device Routes (src/Api/Device/routes/index.ts)
+-------------------------------------------------
+- POST /
+  Description: Creates a new device.
+- GET /
+  Description: Retrieves all devices for the authenticated user.
+  Response:
+    {
+      status: "success",
+      data: [
+        {
+          id: string,
+          name: string,
+          IMIE1: string,
+          IMEI2: string,
+          SN: string,
+          Type: string,
+          status: string,
+          user: {
+            id: string,
+            username: string,
+            email: string
+          },
+          createdAt: Date
+        },
+        ...
+      ]
+    }
+- GET /device/:deviceId
+  Description: Retrieves a specific device by deviceId.
+- GET /search
+  Description: Searches devices by IMEI.
+- PUT /transferOwnership
+  Description: Transfers device ownership.
+- PUT /updatestatus/:deviceId
+  Description: Updates the status of a device.
+
+3. Subscription Routes (src/Api/Subscription/routes/index.ts)
+------------------------------------------------------------
+- GET /getallSubscription
+  Description: Retrieves all subscriptions.
+  Response:
+    {
+      status: "success",
+      data: Array<Subscription>
+    }
+- GET /getOneSubscription/:id
+  Description: Retrieves a subscription by ID.
+  Response:
+    {
+      status: "success",
+      data: Subscription
+    }
+- POST /createSubcription
+  Description: Creates a new subscription (admin only).
+  Response: Not detailed in code.
+- DELETE /deleteSubscription/:id
+  Description: Deletes a subscription by ID (admin only).
+- PUT /updateSubscription/:id
+  Description: Updates a subscription by ID (admin or user).
+
+4. User Routes (src/Api/Users/routers/index.ts)
+-----------------------------------------------
+- POST /create
+  Description: Creates a new user with OTP verification.
+  Response:
+    {
+      status: "success",
+      message: "OTP sent; check your phone"
+    }
+- POST /login
+  Description: Logs in a user.
+- POST /forgetpassword
+  Description: Initiates password reset.
+- POST /validateOtp
+  Description: Validates OTP.
+- GET /getme
+  Description: Retrieves authenticated user's details.
+- PUT /update-user
+  Description: Updates authenticated user's details.
+- PUT /upload-profile-picture
+  Description: Uploads profile picture for authenticated user.
+
+Note: Most routes are protected by authentication and role-based middleware as appropriate.
+
+This document summarizes the main routes and their response structures based on the current codebase.

@@ -2,7 +2,7 @@ import { Response, Request } from "express";
 import { User } from "../../model/users";
 import { BadRequestError } from "@/core/error";
 import { OTPGenerator } from "@/core/utils/otpGenerator";
-import SMSService from "@/core/services/sms";
+import { smsService } from "@/core/services/sms";
 import logger from "@/core/logger";
 interface email {
   phoneNumber: string;
@@ -26,12 +26,12 @@ export const forgetPassword = async (
     const otp = await OTPGenerator.generate();
     const text = `your password reset code for guardget is ${otp} , please ignore if you did not request for this`;
     const to = phoneNumber;
-    const sendOtp = await SMSService.sendMessage({ to, text });
+    const sendOtp = await smsService.sendMessage({ to, text });
     if (!sendOtp) {
       throw new BadRequestError("error sendind OTp");
     }
     req.session.user = {
-      _id: userExist._id,
+      _id: userExist._id?.toString(),
       otpCode: otp,
       password,
       changepassword: true,

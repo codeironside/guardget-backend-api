@@ -1,37 +1,30 @@
-import * as Express from "express-session";
-import { config } from "@/core/utils/config";
+import session from "express-session";
+import connectRedis from "connect-redis";
+import { redisClient } from "../redis";
+import { config } from "../config";
 
-export const sessionMiddleware: Express.SessionOptions = {
+// const RedisStore = connectRedis(session);
+
+
+export const sessionMiddleware = session({
   name: "sid",
   secret: config.SESSIONSECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 2, // 1 day
-    sameSite: "strict",
-    secure: config.NODE_ENV === "production",
     httpOnly: true,
+    secure: config.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 2, // 2 hours
   },
-};
+  rolling: true,
+});
 
+// Type declarations for session data
 declare module "express-session" {
   interface SessionData {
-    user: {
-      _id?: any;
-      otpCode?: any;
-      username?: string;
-      firstName?: string;
-      middleName?: string;
-      surName?: string;
-      role?: any;
-      country?: string;
-      stateOfOrigin?: string;
-      phoneNumber?: string;
-      address?: string;
-      email?: string;
-      password?: string;
-      changepassword?: boolean;
-      keyholder?: string;
-    };
+    userId?: string;
+    role?: string;
+    // Add custom session properties here
   }
 }

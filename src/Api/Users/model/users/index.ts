@@ -37,9 +37,12 @@ const userSchema = new Schema<UserModel>(
       type: String,
       required: true,
     },
-    address: {
+    keyholderPhone1: {
       type: String,
       required: true,
+    },
+    keyholderPhone2: {
+      type: String,
     },
     email: {
       type: String,
@@ -49,7 +52,6 @@ const userSchema = new Schema<UserModel>(
     keyholder: {
       type: String,
       required: [true, "Keyholder is required"],
-
     },
     imageurl: {
       type: String,

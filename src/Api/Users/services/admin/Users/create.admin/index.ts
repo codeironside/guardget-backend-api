@@ -5,7 +5,6 @@ import { Roles } from "@/Api/Users/model/roles/role";
 import { CreateUserDTO, OTP } from "@/Api/Users/interfaces/user.dto";
 import { OTPGenerator } from "@/core/utils/otpGenerator";
 import Logger from "@/core/logger";
-import SMSService from "@/core/services/sms";
 import { BadRequestError } from "@/core/error";
 
 export const createAdmin = async (

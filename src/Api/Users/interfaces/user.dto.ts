@@ -16,6 +16,8 @@ export interface CreateUserDTO {
   email: string;
   password: string;
   keyholder: string;
+  keyholderPhone1: string;
+  keyholderPhone2: string;
 }
 
 export interface GetUserById {
@@ -32,11 +34,12 @@ export interface UserModel extends Document {
   country: string;
   stateOfOrigin: string;
   phoneNumber: string;
-  address: string;
   email: string;
   emailVerified: boolean;
   subActive: boolean;
   keyholder: string;
+  keyholderPhone1: string;
+  keyholderPhone2: string;
   password: string;
   subId?: PopulatedDoc<SubscriptionModel>;
   subActiveTill: Date;
@@ -54,15 +57,15 @@ export interface RolesModel {
   updatedAt: Date;
 }
 
-export interface OTP{
-  otp:string;
+export interface OTP {
+  otp: string;
 }
 
-export interface LoginUser{
+export interface LoginUser {
   email: string;
   password: string;
 }
 
-export interface HashedPassword{
+export interface HashedPassword {
   password: string;
 }

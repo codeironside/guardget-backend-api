@@ -17,19 +17,12 @@ import { API_SUFFIX } from "@/core/utils/types/global";
 import { day } from "@/core/utils/types/global";
 import limiter from "./core/utils/ratelimiter";
 import path from "path";
-
+import { corsMiddleware } from "./core/utils/cors";
+import cors from "cors";
+import logger from "./core/logger";
+import { redisClient } from "./core/utils/redis";
 
 const app = express();
-
-// app.set("trust proxy", true);
-
-app.use(express.json());
-app.use(session(sessionMiddleware));
-app.use(limiter);
-app.use(express.urlencoded({ extended: true }));
-app.use(API_SUFFIX, router);
-
-app.use(errorHandler);
 
 process.on("exit", (code) => {
   console.log(chalk.yellow(`Process exiting with code: ${code}`));
@@ -48,7 +41,19 @@ process.on("unhandledRejection", (reason, promise) => {
 
 (async function initialize() {
   try {
-    console.log(chalk.blue("Connecting to database..."));
+ await redisClient.connect()
+
+    app.use(express.json());
+
+    app.use(corsMiddleware);
+    // app.options("*", corsMiddleware);
+
+    app.use(express.urlencoded({ extended: true }));
+    app.use(sessionMiddleware);
+    app.use(limiter);
+    app.use(API_SUFFIX, router);
+
+    app.use(errorHandler);
     const server = http.createServer(app);
     Db.connect();
     app.use(
@@ -59,11 +64,7 @@ process.on("unhandledRejection", (reason, promise) => {
       })
     );
     server.listen(config.PORT, () => {
-      console.log(
-        day,
-        chalk.green("INFO:"),
-        ` 🚀 server on running ${config.PORT} on ${config.NODE_ENV}`
-      );
+      logger.info(`✅ server on running ${config.PORT} on ${config.NODE_ENV}`);
     });
 
     const shutdown = new GracefulShutdown(server, 15000);

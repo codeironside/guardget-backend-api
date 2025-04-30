@@ -9,6 +9,30 @@ declare global {
   }
 }
 
+// src/types/express-session.d.ts
+import "express-session";
+
+declare module "express-session" {
+  interface SessionData {
+    user?: {
+      _id?: string;
+      otpCode: string;
+      username?: string;
+      firstName?: string;
+      middleName?: string;
+      surName?: string;
+      role?: string;
+      country?: string;
+      stateOfOrigin?: string;
+      phoneNumber?: string;
+      address?: string;
+      email?: string;
+      password?: string;
+      keyholder?: string;
+      changepassword?: boolean;
+    };
+  }
+}
 
 import { SubscriptionModel } from "@/Api/Subscription/interface";
 import { PopulatedDoc } from "mongoose";

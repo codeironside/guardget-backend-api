@@ -9,6 +9,7 @@ import { getUser } from "../services/get.One.users";
 import { updateUser } from "../services/update.user";
 import { validateOtp } from "../services/valid.otp";
 import { uploadImage } from "../services/upload.profile.picture";
+import { resendOtp } from "../services/resend.otp";
 
 export const userRouter = Router();
 
@@ -16,6 +17,7 @@ userRouter.post("/create", userValidationSchema, createUser);
 userRouter.post("/login", loginUser);
 userRouter.post('/forgetpassword', forgetPassword)
 userRouter.post('/validateOtp', validateOtp)
+userRouter.post("/resendOtp", resendOtp)
 
 userRouter.get("/getme", authenticate,getUser);
 userRouter.put("/update-user", authenticate,updateUser)

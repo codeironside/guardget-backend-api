@@ -12,7 +12,6 @@ const deviceSchema = new Schema<DeviceModel>(
     name: { type: String, required: [true, "Name is required"] },
     IMIE1: {
       type: String,
-      required: [true, "IMIE1 is required"],
       unique: true,
     },
     IMEI2: { type: String, unique: true },

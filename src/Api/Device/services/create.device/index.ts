@@ -15,7 +15,7 @@ export const createDevice = async (req: Request, res: Response) => {
     const dto: DeviceCreateDTO = req.body;
 
     await DeviceService.validateDeviceLimit(userId.toString());
-
+    console.log(`dto is ${JSON.stringify(dto)}`)
     const device = await DeviceService.createDevice({
       ...dto,
       UserId: userId,

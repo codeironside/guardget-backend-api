@@ -37,8 +37,6 @@ adminRouter.get(
   RoleGuard.allow("admin"),
   getOneUserDevice
 );
-
-//Receipt management
 adminRouter.get("/getAllreceipt", RoleGuard.allow("admin"), getAllReceipts);
 adminRouter.get(
   "/getUserReceipts/:userId",

@@ -20,7 +20,7 @@ export enum DeviceStatus {
 
 export interface DeviceCreateDTO {
   name: string;
-  IMIE1: string;
+  IMIE1?: string;
   IMEI2?: string;
   SN: string;
   Type: string;

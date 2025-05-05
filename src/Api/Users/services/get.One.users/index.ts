@@ -21,7 +21,7 @@ export const getUser = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = req.userId;
     if (!mongoose.isValidObjectId(id)) {
       throw new BadRequestError("Invalid user ID format");
     }
@@ -83,7 +83,7 @@ export const getUser = async (
       financialSummary,
     };
 
-    logger.info(`Fetched user ${id} for admin`);
+    logger.info(`Fetched user ${id} for`);
     res.status(200).json({ status: "success", data: response });
   } catch (err) {
     logger.error("Error in getOneUser:");

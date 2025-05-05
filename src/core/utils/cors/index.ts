@@ -6,6 +6,12 @@ import logger from "@/core/logger";
 const defaultAllowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "https://g718dksk-3000.uks1.devtunnels.ms",
+  "https://v0.dev",
+  "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--2e03455b.local-credentialless.webcontainer-api.io",
+  "http://localhost:5173",
+  "https://v0-guardget-frontend-structure.vercel.app/",
+  "https://43b0-102-90-82-208.ngrok-free.app",
 ];
 
 let allowedOrigins: string[] = [...defaultAllowedOrigins];

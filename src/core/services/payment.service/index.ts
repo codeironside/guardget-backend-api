@@ -96,7 +96,7 @@ export class PaymentService {
         }
       );
 
-      if (verification.data.data.status === "success") {
+      if (verification.data.data.status !== "success") {
         paymentSession.status = "failed";
         await session.abortTransaction();
         throw new BadRequestError("Payment failed");

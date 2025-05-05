@@ -51,7 +51,7 @@ export class SMSService {
       const requestBody = {
         to: formattedTo,
         sms: payload.text,
-        from: config.TERMII_SENDER_ID,
+        from: config.TERMII_FROM,
         type: "plain",
         channel: "dnd",
         api_key: config.TERMII_API_KEY,

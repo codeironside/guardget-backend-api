@@ -11,6 +11,7 @@ import logger from "@/core/logger";
 export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): Promise<void> => { 
     try {
         const { email, password } = req.body;
+        console.log(`user details ${email}, password ${password}`)
         if (!email || !password) {
             throw new BadRequestError("email and password are required");
         }

@@ -49,10 +49,6 @@ const userSchema = new Schema<UserModel>(
       required: [true, "Email is required"],
       unique: [true, "Email already exists"],
     },
-    keyholder: {
-      type: String,
-      required: [true, "Keyholder is required"],
-    },
     imageurl: {
       type: String,
     },

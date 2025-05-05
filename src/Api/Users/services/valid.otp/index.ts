@@ -48,7 +48,7 @@ export const validateOtp = async (
       throw new BadRequestError("Invalid OTP");
     }
 
-    // Create permanent user
+
     const newUser = await User.create({
       username: userData.username,
       firstName: userData.firstName,
@@ -66,7 +66,6 @@ export const validateOtp = async (
       emailVerified: true,
     });
 
-    // Cleanup Redis data
     await await redisClient.getClient().del(redisKey);
 
     Logger.info(`User created: ${newUser.email}`);
@@ -77,9 +76,7 @@ export const validateOtp = async (
       userId: newUser._id,
     });
   } catch (err) {
-    Logger.error("Error validating OTP:");
-
-    // Cleanup on error
+    Logger.error(`Error validating OTP:${err}`);
     if (tempId) {
       try {
         await redisClient.getClient().del(`temp:user:${tempId}`);

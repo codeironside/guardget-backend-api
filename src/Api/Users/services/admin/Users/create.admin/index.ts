@@ -34,28 +34,35 @@ export const createAdmin = async (
       $or: [{ email }, { phoneNumber }, { username }],
     });
     if (conflict) throw new BadRequestError("User already exists");
-
+    console.log(`user name ${keyholder}`);
     const hashed = await bcrypt.hash(password!, 10);
     const newUser = await User.create({
       username,
       firstName,
       middleName,
       surName,
-      role:roleDoc._id,
+      role: roleDoc._id,
       country,
       stateOfOrigin,
       phoneNumber,
       address,
       email,
-      keyholder,
+      keyholderPhone1: keyholder,
       password: hashed,
       emailVerified: true,
     });
-    const created = await User.findById(newUser._id).select("-password").populate("role","name").lean()
-    if(!newUser) throw new BadRequestError(`error creating user `)
+    const created = await User.findById(newUser._id)
+      .select("-password")
+      .populate("role", "name")
+      .lean();
+    if (!newUser) throw new BadRequestError(`error creating user `);
     res
       .status(201)
-      .json({ status: "success", message: "admin created successfully", data:created });
+      .json({
+        status: "success",
+        message: "admin created successfully",
+        data: created,
+      });
   } catch (err) {
     Logger.error("Error creating user");
     req.session.destroy(() => {});

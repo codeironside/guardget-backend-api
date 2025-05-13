@@ -13,7 +13,9 @@ export const updateDeviceStatus = async (req: Request, res: Response) => {
     const device = await DeviceService.updateDeviceStatus(
       deviceId,
       userId.toString(),
-      dto.status
+      dto.status,
+      dto.location,
+      dto.description
     );
 
     Logger.info(`Device status updated: ${deviceId}`);

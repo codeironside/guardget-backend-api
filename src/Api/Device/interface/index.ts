@@ -7,6 +7,8 @@ export interface DeviceModel {
   IMEI2: string;
   SN: string;
   Type: string;
+  location: string;
+  description: string;
   UserId: Types.ObjectId;
   status: string;
 }
@@ -33,6 +35,8 @@ export interface DeviceTransferDto {
 
 export interface DeviceStatusUpdateDto {
   status: DeviceStatus;
+  location: string;
+  description: string;
 }
 
 export interface DeviceSearchParams {

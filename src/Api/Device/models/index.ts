@@ -3,8 +3,9 @@ import { DeviceModel } from "../interface";
 export enum DeviceStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
-  LOST = "lost",
+  MISSING = "missing",
   STOLEN = "stolen",
+
 }
 
 const deviceSchema = new Schema<DeviceModel>(
@@ -24,6 +25,8 @@ const deviceSchema = new Schema<DeviceModel>(
       default: DeviceStatus.ACTIVE,
       required: [true, "device must have a status"],
     },
+    location: { String },
+    description: { String },
   },
   { timestamps: true }
 );

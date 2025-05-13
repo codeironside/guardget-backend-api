@@ -142,12 +142,14 @@ export class DeviceService {
   static async updateDeviceStatus(
     deviceId: string,
     userId: string,
-    status: DeviceStatus
+    status: DeviceStatus,
+    location: string,
+    description: string
   ): Promise<DeviceModel> {
     try {
       const updatedDevice = await Device.findOneAndUpdate(
         { _id: deviceId, UserId: userId },
-        { status },
+        { status, location, description },
         { new: true, runValidators: true }
       );
 

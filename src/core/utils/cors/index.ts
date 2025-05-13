@@ -10,7 +10,7 @@ const defaultAllowedOrigins = [
   "https://v0.dev",
   "https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--2e03455b.local-credentialless.webcontainer-api.io",
   "http://localhost:5173",
-  "https://v0-guardget-frontend-structure.vercel.app/",
+  "https://v0-guardget-frontend-structure.vercel.app",
   "https://43b0-102-90-82-208.ngrok-free.app",
 ];
 

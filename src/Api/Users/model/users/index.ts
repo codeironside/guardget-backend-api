@@ -65,7 +65,6 @@ const userSchema = new Schema<UserModel>(
       type: Date,
     },
     lastLogin: { type: Date },
-
     password: {
       type: String,
     },
@@ -77,11 +76,38 @@ const userSchema = new Schema<UserModel>(
     toObject: { virtuals: true },
   }
 );
+
+// Add virtual field for subscription
 userSchema.virtual("subscription", {
   ref: "Subscription",
   localField: "subId",
   foreignField: "_id",
   justOne: true,
 });
+
+// Create text indexes for search functionality
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ firstName: 1 });
+userSchema.index({ surName: 1 });
+
+// Add a compound text index for full-text search
+userSchema.index(
+  {
+    email: "text",
+    username: "text",
+    firstName: "text",
+    surName: "text",
+  },
+  {
+    weights: {
+      email: 10,
+      username: 8,
+      firstName: 6,
+      surName: 6,
+    },
+    name: "user_search_index",
+  }
+);
 
 export const User = model<UserModel>("User", userSchema);

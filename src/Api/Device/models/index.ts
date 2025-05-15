@@ -5,6 +5,7 @@ export enum DeviceStatus {
   INACTIVE = "inactive",
   MISSING = "missing",
   STOLEN = "stolen",
+  TRANSFER_PENDING="transfer_pending"
 
 }
 

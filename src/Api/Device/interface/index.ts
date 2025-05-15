@@ -13,11 +13,28 @@ export interface DeviceModel {
   status: string;
 }
 
+export interface TransferredDevice {
+  _id: Types.ObjectId;
+  name: string;
+  IMIE1?: string;
+  IMEI2?: string;
+  SN: string;
+  Type: string;
+  fromID: Types.ObjectId;
+  status: string;
+  toID: Types.ObjectId;
+  reason?: string;
+  transferDate: Date;
+}
+
 export enum DeviceStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
   LOST = "lost",
   STOLEN = "stolen",
+  TRANSFER_PENDING = "transfer_pending",
+  TRANSFER_CANCELLED = "transfer_cancelled",
+  TRANSFER_APPROVED = "transfer_approved",
 }
 
 export interface DeviceCreateDTO {

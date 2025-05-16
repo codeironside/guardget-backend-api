@@ -44,7 +44,7 @@ process.on("unhandledRejection", (reason, promise) => {
  await redisClient.connect()
 
     app.use(express.json());
-    app.set("trust proxy", true); 
+    app.set("trust proxy", false); 
     app.use(corsMiddleware);
     // app.options("*", corsMiddleware);
 

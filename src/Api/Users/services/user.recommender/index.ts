@@ -36,14 +36,14 @@ export const searchUsers = async (req: Request, res: Response) => {
 
     // If no query is provided or query is empty,   recent contacts
     if (!query || query.trim() === "") {
-        await getRecentContacts(currentUserId, res);
+      await getRecentContacts(currentUserId, res);
     }
 
     // Short queries need special handling for better UX
     if (query.length < 2) {
       // Allow searching with @ symbol even with only one character
       if (!query.includes("@")) {
-          res.json({
+        res.json({
           status: "success",
           data: [] as UserSearchResult[],
         });
@@ -63,7 +63,7 @@ export const searchUsers = async (req: Request, res: Response) => {
         _id: { $ne: currentUserId },
         email: { $regex: searchRegex },
       })
-        .select("_id username email imageurl firstName surName middleName")
+        .select("_id username email imageurl role firstName surName middleName")
         .limit(10)
         .lean()
         .then(
@@ -224,6 +224,7 @@ export const searchUsers = async (req: Request, res: Response) => {
             username: 1,
             email: 1,
             imageurl: 1,
+            role: 1,
             firstName: 1,
             surName: 1,
             middleName: 1,
@@ -300,7 +301,7 @@ export const getRecentContacts = async (
         const recentContacts = await User.find({
           _id: { $in: objectIdArray },
         })
-          .select("_id username email imageurl firstName surName middleName")
+          .select("_id username email imageurl role firstName surName middleName")
           .limit(5)
           .lean();
 
@@ -309,6 +310,7 @@ export const getRecentContacts = async (
           username: user.username,
           email: user.email,
           imageurl: user.imageurl,
+          role: user.role,
           firstName: user.firstName,
           surName: user.surName,
           middleName: user.middleName,
@@ -333,7 +335,7 @@ export const getRecentContacts = async (
         emailVerified: true,
       })
         .sort({ createdAt: -1 })
-        .select("_id username email imageurl firstName surName middleName")
+        .select("_id username email imageurl role firstName surName middleName")
         .limit(5)
         .lean();
 
@@ -342,16 +344,15 @@ export const getRecentContacts = async (
         username: user.username,
         email: user.email,
         imageurl: user.imageurl,
+        role: user.role,
         firstName: user.firstName,
         surName: user.surName,
         middleName: user.middleName,
       }));
 
-      Logger.info(
-        ` ing ${formattedUsers.length} active users as suggestions`
-      );
+      Logger.info(` ing ${formattedUsers.length} active users as suggestions`);
 
-     res.json({
+      res.json({
         status: "success",
         data: formattedUsers,
       });
@@ -359,7 +360,7 @@ export const getRecentContacts = async (
       Logger.error(`Failed to get active users: ${error}`);
 
       // If all else fails,   empty array to avoid breaking the frontend
-        res.json({
+      res.json({
         status: "success",
         data: [],
       });
@@ -385,7 +386,7 @@ export const getRecentContactsEndpoint = async (
   try {
     const currentUserId = new Types.ObjectId(req.userId!);
     Logger.info(`Recent contacts endpoint called by user ${req.userId}`);
-      await getRecentContacts(currentUserId, res);
+    await getRecentContacts(currentUserId, res);
   } catch (error) {
     Logger.error(`Recent contacts endpoint failed: ${error}`);
     throw new BadRequestError(
@@ -395,4 +396,3 @@ export const getRecentContactsEndpoint = async (
     );
   }
 };
-

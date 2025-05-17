@@ -11,17 +11,19 @@ interface RegistrationTokenPayload {
   tempId: string;
 }
 
-export const resendDeviceResendOtpend = async (req: Request, res: Response): Promise<void> => {
+export const resendDeviceResendOtpend = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   let registrationToken: string | undefined;
 
   try {
-    registrationToken = req.body.registrationToken;
+    registrationToken = req.body.registerationToken;
 
     if (!registrationToken) {
       throw new BadRequestError("Missing registration token");
     }
 
-    // Verify JWT
     const decoded = jwt.verify(
       registrationToken,
       config.JWT_SECRET
@@ -34,13 +36,10 @@ export const resendDeviceResendOtpend = async (req: Request, res: Response): Pro
     const tempData = await redisClient.getClient().get(redisKey);
 
     if (!tempData) {
-      throw new BadRequestError(
-        "Session expired. Please start registration again."
-      );
+      throw new BadRequestError("Session expired. Please start process again.");
     }
 
     const userData = JSON.parse(tempData);
-
     // Generate new OTP
     const newOtp = await OTPGenerator.generate();
 
@@ -55,10 +54,10 @@ export const resendDeviceResendOtpend = async (req: Request, res: Response): Pro
       .getClient()
       .setEx(redisKey, 900, JSON.stringify(updatedData));
 
-    // Resend SMS
+    console.log(`user data ${JSON.stringify(updatedData.phoneNumber)}`);
     const text = `Your new Guardget confirmation code is ${newOtp}. Please don't share it with anyone else`;
     const sent = await smsService.sendMessage({
-      to: updatedData.phoneNumber,
+      to: updatedData.phonenumber,
       text,
     });
 

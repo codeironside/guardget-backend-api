@@ -9,7 +9,10 @@ const transferHistory = new Schema<TransferredDevice>(
     IMIE1: { type: String },
     IMEI2: { type: String },
     Type: { type: String },
-    reason: { type: String },
+    reason: {
+      type: String,
+      required: [true, "please add reason for transfer"],
+    },
     SN: { type: String, required: [true, "please add a Serial Number"] },
     fromID: {
       type: Schema.Types.ObjectId,
@@ -25,6 +28,7 @@ const transferHistory = new Schema<TransferredDevice>(
       type: Schema.Types.ObjectId,
       required: [true, "to Id can not be blanked"],
     },
+
     transferDate: { type: Date },
   },
   {

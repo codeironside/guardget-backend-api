@@ -64,20 +64,19 @@ export class DeviceService {
   }
 
   static async transferDeviceByDetails(
-    imei: string,
-    sn: string,
+    deviceId: string,
     currentUserId: string,
-    newUserEmail: string
+    newUserEmail: string,
+    reason:string
   ): Promise<DeviceModel> {
     const session = await mongoose.startSession();
     try {
       session.startTransaction();
 
       // Find device and validate ownership
-      const device = await Device.findOne({
-        $or: [{ IMIE1: imei }, { IMEI2: imei }],
-        SN: sn,
-      }).session(session);
+      const device = await Device.findById(
+      deviceId
+      ).session(session);
 
       if (!device) throw new BadRequestError("Device not found");
       if (device.UserId.toString() !== currentUserId) {
@@ -111,6 +110,7 @@ export class DeviceService {
             toID: newUser._id,
             status: DeviceStatus.TRANSFER_PENDING,
             transferDate: transferDate,
+            reason:reason
           },
         ],
         { session }

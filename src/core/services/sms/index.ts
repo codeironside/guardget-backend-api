@@ -46,6 +46,7 @@ export class SMSService {
     payload: SendSMSPayload
   ): Promise<TermiiSMSResponse> {
     try {
+      console.log(`payload ${JSON.stringify(payload)}`)
       const formattedTo = await this.cleanPhoneNumber(payload.to);
 
       const requestBody = {

@@ -23,7 +23,7 @@ export interface TransferredDevice {
   fromID: Types.ObjectId;
   status: string;
   toID: Types.ObjectId;
-  reason?: string;
+  reason: string;
   transferDate: Date;
 }
 

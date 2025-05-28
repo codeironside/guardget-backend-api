@@ -16,10 +16,13 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
             throw new BadRequestError("email and password are required");
         }
         const userExist = await User.findOne({ email });
+
+        console.log(`user details ${userExist}`);
         if (!userExist) {
             throw new BadRequestError("user does not exist");
         }
         const isPasswordValid = bycrypt.compareSync(password, userExist.password);
+        console.log(`password is valid ${isPasswordValid}`);
         if (!isPasswordValid) {
             throw new BadRequestError("invalid credentials");
         }
@@ -50,7 +53,8 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
             data:user
         })
 
-    }catch(error){
+    } catch (error) {
+        console.log(`error ${JSON.stringify(error)}`)
         throw new BadRequestError("invalid credentials");
     }
 }

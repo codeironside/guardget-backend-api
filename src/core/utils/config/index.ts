@@ -27,6 +27,8 @@ interface Config {
   REDIS_PORT: number;
   REDIS_TLS: string;
   JWT_SECRET: string;
+  BACKEND_BASE_URL: string;
+  FRONTEND_URL: string;
 }
 
 // Export the concrete implementation
@@ -53,9 +55,9 @@ export const config: Config = {
   REDIS_USERNAME: process.env.REDIS_USERNAME || "",
   REDIS_PASSWORD: process.env.REDIS_PASSWORD || "",
   REDIS_HOST: process.env.REDIS_HOST || "",
-  REDIS_PORT: parseInt(process.env.REDIS_PORT || '17481', 10),
-  REDIS_TLS: process.env.REDIS_TLS || 'true',
-  JWT_SECRET: process.env.JWT_SECRET || '',
-  
-  
+  REDIS_PORT: parseInt(process.env.REDIS_PORT || "17481", 10),
+  REDIS_TLS: process.env.REDIS_TLS || "true",
+  JWT_SECRET: process.env.JWT_SECRET || "",
+  BACKEND_BASE_URL: process.env.BACKEND_BASE_URL || "",
+  FRONTEND_URL: process.env.FRONTEND_URL || "",
 };

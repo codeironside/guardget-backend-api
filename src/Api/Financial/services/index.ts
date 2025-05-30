@@ -46,14 +46,14 @@ export class PaymentController {
           durationUnit,
           amount,
           user.email,
-          // Add callback URL parameter
-          `${config.BACKEND_BASE_URL}/api/payment/callback`
+          // This points to your backend callback endpoint
+          `${config.BACKEND_BASE_URL}/api/financial/callback`
         );
 
       logger.warn(
         `Payment initialized for user ${userId} with reference ${reference}`
       );
-      
+
       res.status(200).json({
         status: "success",
         data: { authorizationUrl, reference },
@@ -69,49 +69,71 @@ export class PaymentController {
     }
   }
 
-  // NEW: Backend callback endpoint that handles Paystack redirect
+  // NEW: Backend callback that handles Paystack redirect (GET request)
   async handlePaymentCallback(req: Request, res: Response) {
     try {
       const reference = String(req.query.reference || "");
       if (!reference) {
+        logger.error("Payment callback missing reference");
         // Redirect to frontend with error
         return res.redirect(
-          `${config.FRONTEND_URL}/dashboard/subscriptions?status=error&message=${encodeURIComponent('Missing payment reference')}`
+          `${
+            config.FRONTEND_URL
+          }/dashboard/subscriptions?status=error&message=${encodeURIComponent(
+            "Missing payment reference"
+          )}`
         );
       }
 
+      logger.info(`Processing payment callback for reference: ${reference}`);
+
       // Verify payment
       const receipt = await this.service.verifyPayment(reference);
-      const subscription = await Subscription.findById(receipt.subscriptionId).select("name");
-      
+      const subscription = await Subscription.findById(
+        receipt.subscriptionId
+      ).select("name");
+
       logger.info(`Payment verified successfully for reference ${reference}`);
-      
+
       // Redirect to frontend with success status
       return res.redirect(
-        `${config.FRONTEND_URL}/dashboard/subscriptions?status=success&message=${encodeURIComponent('Payment verified successfully! Your subscription has been activated.')}`
+        `${
+          config.FRONTEND_URL
+        }/dashboard/subscriptions?status=success&message=${encodeURIComponent(
+          "Payment verified successfully! Your subscription has been activated."
+        )}`
       );
-      
     } catch (error) {
-      logger.error(`Payment callback error: ${error}`);
-      
+      logger.error(
+        `Payment callback error for reference ${req.query.reference}: ${error}`
+      );
+
       // Redirect to frontend with error status
       return res.redirect(
-        `${config.FRONTEND_URL}/dashboard/subscriptions?status=error&message=${encodeURIComponent('Payment verification failed. Please contact support if money was deducted.')}`
+        `${
+          config.FRONTEND_URL
+        }/dashboard/subscriptions?status=error&message=${encodeURIComponent(
+          "Payment verification failed. Please contact support if money was deducted."
+        )}`
       );
     }
   }
 
-  // KEEP: API endpoint for manual verification (if needed)
+  // UPDATED: Manual verification endpoint (POST request for API calls)
   async verifyPayment(req: Request, res: Response) {
     try {
-      const reference = String(req.query.reference || "");
+      const reference = String(req.body.reference || req.query.reference || "");
       if (!reference) throw new BadRequestError("Missing payment reference");
 
       const receipt = await this.service.verifyPayment(reference);
-      const subscription = await Subscription.findById(receipt.subscriptionId).select("-_id name");
-      
-      logger.info(`Payment verified for reference ${reference}`);
-      
+      const subscription = await Subscription.findById(
+        receipt.subscriptionId
+      ).select("-_id name");
+
+      logger.info(
+        `Manual payment verification completed for reference ${reference}`
+      );
+
       res.status(200).json({
         status: "success",
         data: {

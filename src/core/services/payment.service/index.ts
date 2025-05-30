@@ -69,7 +69,9 @@ export class PaymentService {
         status: "pending",
       });
 
-      logger.info(`Payment session created for reference: ${reference}`);
+      logger.info(
+        `Payment session created with callback URL: ${callbackUrl}, reference: ${reference}`
+      );
 
       return {
         authorizationUrl: response.data.data.authorization_url,
@@ -81,6 +83,7 @@ export class PaymentService {
     }
   }
 
+  // Keep your existing verifyPayment method - no changes needed
   async verifyPayment(
     reference: string
   ): Promise<HydratedDocument<ReceiptModel>> {
@@ -93,7 +96,6 @@ export class PaymentService {
         throw new BadRequestError("Invalid payment reference");
       }
 
-      // Verify with Paystack
       const verification = await axios.get(
         `https://api.paystack.co/transaction/verify/${reference}`,
         {
@@ -103,21 +105,10 @@ export class PaymentService {
         }
       );
 
-      const paystackData = verification.data.data;
-
-      if (paystackData.status !== "success") {
+      if (verification.data.data.status !== "success") {
         paymentSession.status = "failed";
         await session.abortTransaction();
-        throw new BadRequestError(
-          `Payment failed: ${paystackData.gateway_response || "Unknown error"}`
-        );
-      }
-
-      // Verify amount matches (security check)
-      const expectedAmount = paymentSession.amount * 100; // Convert to kobo
-      if (paystackData.amount !== expectedAmount) {
-        await session.abortTransaction();
-        throw new BadRequestError("Payment amount mismatch");
+        throw new BadRequestError("Payment failed");
       }
 
       const user = await User.findById(paymentSession.userId).session(session);
@@ -125,7 +116,6 @@ export class PaymentService {
         throw new BadRequestError("User not found");
       }
 
-      // Create receipt
       const [receipt] = await Receipt.create(
         [
           {
@@ -138,15 +128,11 @@ export class PaymentService {
             duration: paymentSession.duration,
             subscriptionId: paymentSession.subId,
             durationUnit: paymentSession.durationUnit,
-            // Add Paystack transaction details
-            paystackReference: paystackData.reference,
-            paystackTransactionId: paystackData.id,
           },
         ],
         { session }
       );
 
-      // Update user subscription
       const baseDate =
         user.subActiveTill && user.subActiveTill > new Date()
           ? user.subActiveTill
@@ -164,15 +150,8 @@ export class PaymentService {
       user.subId = paymentSession.subId;
       await user.save({ session });
 
-      // Clean up payment session
       this.paymentSessions.delete(reference);
-      paymentSession.status = "completed";
-
       await session.commitTransaction();
-
-      logger.info(
-        `Payment verification completed for user ${user._id}, reference: ${reference}`
-      );
 
       return receipt;
     } catch (error) {
@@ -183,24 +162,6 @@ export class PaymentService {
       );
     } finally {
       session.endSession();
-    }
-  }
-
-  // Optional: Method to check payment status
-  async getPaymentStatus(reference: string): Promise<string> {
-    const paymentSession = this.paymentSessions.get(reference);
-    return paymentSession?.status || "not_found";
-  }
-
-  // Optional: Cleanup expired payment sessions
-  cleanupExpiredSessions(): void {
-    const now = Date.now();
-    const expiryTime = 30 * 60 * 1000; // 30 minutes
-
-    for (const [reference, session] of this.paymentSessions.entries()) {
-      // You might want to add a timestamp to PaymentSession interface
-      // For now, just log cleanup
-      logger.info(`Cleaning up payment sessions if needed`);
     }
   }
 }

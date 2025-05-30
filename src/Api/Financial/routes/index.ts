@@ -6,19 +6,32 @@ import { getOneReceiptForUser } from "../services/get.one.payment";
 
 export const financialRouter = Router();
 const paymentController = new PaymentController();
-financialRouter.use(authenticate)
 
+// Routes that require authentication
+financialRouter.use("/initialize", authenticate);
+financialRouter.use("/verify", authenticate);
+financialRouter.use("/getallreceiptforuser", authenticate);
+financialRouter.use("/getoneforuser", authenticate);
+
+// Payment initialization (requires auth)
 financialRouter.post(
   "/initialize",
   paymentController.initializePayment.bind(paymentController)
 );
 
-financialRouter.post(
+// Paystack callback endpoint (NO AUTH - Paystack calls this directly)
+// This is where Paystack redirects users after payment
+financialRouter.get(
   "/callback",
   paymentController.handlePaymentCallback.bind(paymentController)
 );
+
+// Manual payment verification (requires auth - for API calls)
+financialRouter.post(
+  "/verify",
+  paymentController.verifyPayment.bind(paymentController)
+);
+
+// Receipt routes (require auth)
 financialRouter.get("/getallreceiptforuser", getReceiptsForUsers);
-
-financialRouter.get("/getoneforuser/:id", getOneReceiptForUser)
-
-       
+financialRouter.get("/getoneforuser/:id", getOneReceiptForUser);

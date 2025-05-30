@@ -8,14 +8,14 @@ export const financialRouter = Router();
 const paymentController = new PaymentController();
 
 // Routes that require authentication
-financialRouter.use("/initialize", authenticate);
-financialRouter.use("/verify", authenticate);
-financialRouter.use("/getallreceiptforuser", authenticate);
-financialRouter.use("/getoneforuser", authenticate);
+// financialRouter.use("/initialize", authenticate);
+// financialRouter.use("/verify", authenticate);
+// financialRouter.use("/getallreceiptforuser", authenticate);
+// financialRouter.use("/getoneforuser", authenticate);
 
 // Payment initialization (requires auth)
 financialRouter.post(
-  "/initialize",
+  "/initialize", authenticate,
   paymentController.initializePayment.bind(paymentController)
 );
 
@@ -29,9 +29,10 @@ financialRouter.get(
 // Manual payment verification (requires auth - for API calls)
 financialRouter.post(
   "/verify",
+  authenticate,
   paymentController.verifyPayment.bind(paymentController)
 );
 
 // Receipt routes (require auth)
-financialRouter.get("/getallreceiptforuser", getReceiptsForUsers);
-financialRouter.get("/getoneforuser/:id", getOneReceiptForUser);
+financialRouter.get("/getallreceiptforuser", authenticate, getReceiptsForUsers);
+financialRouter.get("/getoneforuser/:id", authenticate, getOneReceiptForUser);

@@ -32,7 +32,7 @@ export const TransferDeviceOTP = async (
 
     // Send OTP via SMS
     const sent = await smsService.sendMessage({
-      to: findUsers.phoneNumber,
+      to: findUsers.keyholderPhone1,
       text,
     });
     if (!sent) {
@@ -45,7 +45,7 @@ export const TransferDeviceOTP = async (
     // Prepare data for temporary transfer validation
     const TemptransferDeviceValidation = {
       otp,
-      phonenumber: findUsers.phoneNumber,
+      phonenumber: findUsers.keyholderPhone1,
     };
 
     // Store temporary transfer validation OTP

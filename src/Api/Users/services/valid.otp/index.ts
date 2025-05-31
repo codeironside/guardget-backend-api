@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { config } from "@/core/utils/config";
 import bcrypt from "bcrypt";
 import Logger from "@/core/logger";
+import mongoose from "mongoose";
 
 interface RegistrationTokenPayload {
   tempId: string;
@@ -49,22 +50,25 @@ export const validateOtp = async (
     }
 
 
-    const newUser = await User.create({
-      username: userData.username,
-      firstName: userData.firstName,
-      middleName: userData.middleName,
-      surName: userData.surName,
-      role: userData.role,
-      country: userData.country,
-      stateOfOrigin: userData.stateOfOrigin,
-      phoneNumber: userData.phoneNumber,
-      keyholderPhone1: userData.keyholderPhone1,
-      keyholderPhone2: userData.keyholderPhone2,
-      email: userData.email,
-      password: userData.password, // Already hashed
-      keyholder: userData.keyholder,
-      emailVerified: true,
-    });
+const newUser = await User.create({
+  username: userData.username,
+  firstName: userData.firstName,
+  middleName: userData.middleName,
+  surName: userData.surName,
+  role: userData.role,
+  country: userData.country,
+  stateOfOrigin: userData.stateOfOrigin,
+  phoneNumber: userData.phoneNumber,
+  keyholderPhone1: userData.keyholderPhone1,
+  keyholderPhone2: userData.keyholderPhone2,
+  email: userData.email,
+  password: userData.password,
+  subId: new mongoose.Types.ObjectId("683ae445cf6f920974019639"),
+  subActive: true,
+  subActiveTill: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  keyholder: userData.keyholder,
+  emailVerified: true,
+});
 
     await await redisClient.getClient().del(redisKey);
 

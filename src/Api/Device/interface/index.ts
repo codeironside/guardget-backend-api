@@ -5,11 +5,12 @@ export interface DeviceModel {
   name: string;
   IMIE1: string;
   IMEI2: string;
-  SN: string;
+  serialNumber: string;
   Type: string;
   location: string;
   description: string;
   UserId: Types.ObjectId;
+  purchaseDate: Date;
   status: string;
 }
 
@@ -18,7 +19,7 @@ export interface TransferredDevice {
   name: string;
   IMIE1?: string;
   IMEI2?: string;
-  SN: string;
+  serialNumber: string;
   Type: string;
   fromID: Types.ObjectId;
   status: string;
@@ -41,7 +42,7 @@ export interface DeviceCreateDTO {
   name: string;
   IMIE1?: string;
   IMEI2?: string;
-  SN: string;
+  serialNumber: string;
   Type: string;
   status: string;
 }
@@ -65,7 +66,7 @@ export interface DeviceResponse {
   name: string;
   IMIE1: string;
   IMEI2?: string;
-  SN: string;
+  serialNumber: string;
   Type: string;
   status: DeviceStatus;
   userId: string;

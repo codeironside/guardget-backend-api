@@ -39,7 +39,7 @@ export const getUser = async (
 
     // Fetch all devices for this user
     const devices = await Device.find({ UserId: userObjectId })
-      .select("name IMIE1 IMEI2 SN Type status createdAt")
+      .select("name IMIE1 IMEI2 serialNumber Type status createdAt")
       .lean<DeviceModel[]>()
       .exec();
 

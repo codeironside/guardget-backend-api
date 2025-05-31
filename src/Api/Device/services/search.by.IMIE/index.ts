@@ -28,7 +28,7 @@ interface PopulatedTransfer {
     middleName?: string;
     imageurl?: string;
   };
-  SN: string;
+  serialNumber: string;
 }
 
 export const searchByIMEI = async (req: Request, res: Response) => {
@@ -37,7 +37,7 @@ export const searchByIMEI = async (req: Request, res: Response) => {
     const userId = req.userId;
 
     const device = await Device.findOne({
-      $or: [{ IMIE1: qparams }, { IMEI2: qparams }, { SN: qparams }],
+      $or: [{ IMIE1: qparams }, { IMEI2: qparams }, { serialNumber: qparams }],
     })
       .populate("UserId", "username email imageurl phoneNumber")
       .lean();
@@ -48,7 +48,7 @@ export const searchByIMEI = async (req: Request, res: Response) => {
 
     // Get transfer history with proper typing
     const transferHistory = (await TransferredDeviceModel.find({
-      SN: device.SN,
+      serialNumber: device.serialNumber,
     })
       .populate<{
         fromID: PopulatedTransfer["fromID"];
@@ -104,7 +104,7 @@ const mapDeviceResponse = (device: any) => ({
   name: device.name,
   IMIE1: device.IMIE1,
   IMEI2: device.IMEI2,
-  SN: device.SN,
+  serialNumber: device.serialNumber,
   Type: device.Type,
   status: device.status,
   location: device.location,
@@ -112,7 +112,7 @@ const mapDeviceResponse = (device: any) => ({
     id: device.UserId._id,
     username: device.UserId.username,
     email: device.UserId.email,
-    imageurl:device.UserId.imageurl,
+    imageurl: device.UserId.imageurl,
   },
   updatedAt: device.updatedAt,
 });

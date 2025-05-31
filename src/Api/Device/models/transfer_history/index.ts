@@ -13,7 +13,10 @@ const transferHistory = new Schema<TransferredDevice>(
       type: String,
       required: [true, "please add reason for transfer"],
     },
-    SN: { type: String, required: [true, "please add a Serial Number"] },
+    serialNumber: {
+      type: String,
+      required: [true, "please add a Serial Number"],
+    },
     fromID: {
       type: Schema.Types.ObjectId,
       required: [true, "sender id can not be blanked"],

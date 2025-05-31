@@ -5,8 +5,7 @@ export enum DeviceStatus {
   INACTIVE = "inactive",
   MISSING = "missing",
   STOLEN = "stolen",
-  TRANSFER_PENDING="transfer_pending"
-
+  TRANSFER_PENDING = "transfer_pending",
 }
 
 const deviceSchema = new Schema<DeviceModel>(
@@ -15,11 +14,17 @@ const deviceSchema = new Schema<DeviceModel>(
     IMIE1: {
       type: String,
       unique: true,
+      sparse: true,
     },
-    IMEI2: { type: String, unique: true },
-    SN: { type: String, required: [true, "SN is required"], unique: true },
+    IMEI2: { type: String, unique: true, sparse: true },
+    serialNumber: {
+      type: String,
+      required: [true, "serialNumber is required"],
+      unique: true,
+    },
     Type: { type: String, required: [true, "Type is required"] },
     UserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    purchaseDate: { type: Date, required: [true, "date is required"] },
     status: {
       type: String,
       enum: Object.values(DeviceStatus),

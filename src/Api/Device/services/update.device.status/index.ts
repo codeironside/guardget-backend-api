@@ -33,7 +33,7 @@ const mapDeviceResponse = (device: any) => ({
   name: device.name,
   IMIE1: device.IMIE1,
   IMEI2: device.IMEI2,
-  SN: device.SN,
+  serialNumber: device.serialNumber,
   Type: device.Type,
   status: device.status,
   user: {

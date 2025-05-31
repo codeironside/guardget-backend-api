@@ -26,7 +26,7 @@ export const getAllDevices = async (
                 username: 1,
                 email: 1,
                 phoneNumber: 1,
-                imageurl:1,
+                imageurl: 1,
                 subscriptionStatus: {
                   $cond: {
                     if: "$subActive",
@@ -49,7 +49,7 @@ export const getAllDevices = async (
         $project: {
           name: 1,
           IMIE1: 1,
-          SN: 1,
+          serialNumber: 1,
           Type: 1,
           status: 1,
           createdAt: 1,

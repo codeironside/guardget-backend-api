@@ -12,7 +12,6 @@ export const getDevice = async (req: Request, res: Response) => {
     const { deviceId } = req.params;
     const userId = new mongoose.Types.ObjectId(req.userId!);
 
-
     if (!mongoose.Types.ObjectId.isValid(deviceId)) {
       throw new BadRequestError("Invalid device ID");
     }
@@ -22,13 +21,11 @@ export const getDevice = async (req: Request, res: Response) => {
     );
 
     if (!device) {
-      throw new BadRequestError(
-       "Device not found or unauthorized"
-      );
+      throw new BadRequestError("Device not found or unauthorized");
     }
-      if (device.UserId === userId) {
-        throw new BadRequestError("Unauthorized access");
-       }
+    if (device.UserId === userId) {
+      throw new BadRequestError("Unauthorized access");
+    }
 
     Logger.info(`Device retrieved: ${deviceId}`);
     res.json({
@@ -48,7 +45,7 @@ const mapDeviceResponse = (device: any) => ({
   name: device.name,
   IMIE1: device.IMIE1,
   IMEI2: device.IMEI2,
-  SN: device.SN,
+  serialNumber: device.serialNumber,
   Type: device.Type,
   status: device.status,
   user: {

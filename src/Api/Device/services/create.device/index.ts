@@ -15,11 +15,10 @@ export const createDevice = async (req: Request, res: Response) => {
     const dto: DeviceCreateDTO = req.body;
 
     await DeviceService.validateDeviceLimit(userId.toString());
-    console.log(`dto is ${JSON.stringify(dto)}`)
+    console.log(`dto is ${JSON.stringify(dto)}`);
     const device = await DeviceService.createDevice({
       ...dto,
       UserId: userId,
-    
     });
 
     Logger.info(`Device created: ${device._id}`);
@@ -28,7 +27,7 @@ export const createDevice = async (req: Request, res: Response) => {
       data: mapToDeviceResponse(device),
     });
   } catch (error) {
-    
+    console.log(error);
     Logger.error(`Device creation failed: ${error}`);
     throw new BadRequestError(
       "Device creation failed or No Active Subscription"
@@ -41,7 +40,7 @@ const mapToDeviceResponse = (device: any): DeviceResponse => ({
   name: device.name,
   IMIE1: device.IMIE1,
   IMEI2: device.IMEI2 || undefined,
-  SN: device.SN,
+  serialNumber: device.serialNumber,
   Type: device.Type,
   status: device.status,
   userId: device.UserId._id?.toString() || device.UserId.toString(),

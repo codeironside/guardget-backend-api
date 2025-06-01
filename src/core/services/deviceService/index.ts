@@ -7,6 +7,7 @@ import { DeviceStatus } from "@/Api/Device/interface";
 import { SubscriptionModel } from "@/Api/Subscription/interface";
 import { TransferredDevice } from "@/Api/Device/interface";
 import { TransferredDeviceModel } from "@/Api/Device/models/transfer_history";
+import { TRANSFER_EXPIRY_HOURS } from "@/core/utils/types/global";
 
 type DeviceCreateData = {
   name?: string;
@@ -20,27 +21,32 @@ type DeviceCreateData = {
   UserId?: mongoose.Types.ObjectId;
 };
 
+interface MongoIndex {
+  v: number;
+  key: Record<string, number>;
+  name: string;
+  unique?: boolean;
+  sparse?: boolean;
+  background?: boolean;
+}
+
 function mapInputToDbFields(data: DeviceCreateData): any {
   const mapped: any = {};
 
-  // Copy all fields except the ones we need to transform
   Object.keys(data).forEach((key) => {
     if (key !== "type" && key !== "IMEI1" && key !== "IMEI2") {
       mapped[key] = data[key as keyof DeviceCreateData];
     }
   });
 
-  // Handle type mapping
   if (data.type !== undefined) {
     mapped.Type = data.type;
   }
 
-  // Handle IMEI1 mapping - only add if not empty
   if (data.IMEI1 && data.IMEI1.trim() !== "") {
     mapped.IMIE1 = data.IMEI1.trim();
   }
 
-  // Handle IMEI2 mapping - only add if not empty
   if (data.IMEI2 && data.IMEI2.trim() !== "") {
     mapped.IMEI2 = data.IMEI2.trim();
   }
@@ -172,11 +178,105 @@ export class DeviceService {
 
       await session.commitTransaction();
       return populated!;
-    } catch (err) {
+    } catch (err: any) {
       await session.abortTransaction();
+
+      if (err.code === 11000) {
+        const field = Object.keys(err.keyPattern)[0];
+        const value = err.keyValue[field];
+
+        if (field === "IMEI2" && value === null) {
+          throw new BadRequestError(
+            "Database index error: Multiple devices cannot have empty IMEI2. Please contact support."
+          );
+        }
+
+        throw new BadRequestError(`${field} "${value}" is already in use`);
+      }
+
       throw err;
     } finally {
       session.endSession();
+    }
+  }
+
+  static async fixIndexes(): Promise<void> {
+    try {
+      console.log("Checking and fixing database indexes...");
+
+      const collection = Device.collection;
+      const indexes = (await collection
+        .listIndexes()
+        .toArray()) as MongoIndex[];
+
+      console.log(
+        "Current indexes:",
+        indexes.map((idx) => ({
+          name: idx.name,
+          key: idx.key,
+          unique: idx.unique,
+          sparse: idx.sparse,
+        }))
+      );
+
+      const indexesToFix = indexes.filter(
+        (index) =>
+          (index.name === "IMEI2_1" || index.name === "IMIE1_1") &&
+          index.unique &&
+          !index.sparse
+      );
+
+      if (indexesToFix.length > 0) {
+        console.log(
+          "Found non-sparse unique indexes that need fixing:",
+          indexesToFix.map((idx) => idx.name)
+        );
+
+        for (const index of indexesToFix) {
+          console.log(`Dropping non-sparse index: ${index.name}`);
+          try {
+            await collection.dropIndex(index.name);
+            console.log(`Successfully dropped index: ${index.name}`);
+          } catch (error: any) {
+            if (error.code === 27) {
+              console.log(`Index ${index.name} doesn't exist, skipping...`);
+            } else {
+              console.error(
+                `Error dropping index ${index.name}:`,
+                error.message
+              );
+            }
+          }
+
+          console.log(
+            `Creating new sparse index for: ${Object.keys(index.key)[0]}`
+          );
+          try {
+            await collection.createIndex(index.key, {
+              unique: true,
+              sparse: true,
+              name: `${index.name}_sparse`,
+            });
+            console.log(
+              `Successfully created sparse index: ${index.name}_sparse`
+            );
+          } catch (error: any) {
+            if (error.code === 85) {
+              console.log(`Index already exists, skipping...`);
+            } else {
+              console.error(`Error creating index:`, error.message);
+            }
+          }
+        }
+      } else {
+        console.log(
+          "All indexes are already properly configured with sparse option!"
+        );
+      }
+
+      console.log("Index fix completed!");
+    } catch (error) {
+      console.error("Index fix error:", error);
     }
   }
 
@@ -235,7 +335,7 @@ export class DeviceService {
       }
       if (device.status.toString() === DeviceStatus.TRANSFER_PENDING) {
         throw new BadRequestError(
-          "device can not be transfered while still under 21 days review"
+          `Device cannot be transferred while under ${TRANSFER_EXPIRY_HOURS}-day review`
         );
       }
 
@@ -245,7 +345,7 @@ export class DeviceService {
       if (!newUser) throw new BadRequestError("Recipient not found");
 
       const transferDate = new Date();
-      transferDate.setDate(transferDate.getDate() + 21);
+      transferDate.setHours(transferDate.getHours() + TRANSFER_EXPIRY_HOURS);
 
       await TransferredDeviceModel.create(
         [
@@ -285,6 +385,7 @@ export class DeviceService {
     const session = await mongoose.startSession();
     try {
       await session.withTransaction(async () => {
+        const currentDate = new Date();
         const expiredTransfers = await TransferredDeviceModel.aggregate([
           {
             $match: {
@@ -303,7 +404,7 @@ export class DeviceService {
           {
             $match: {
               transferDate: {
-                $lte: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
+                $lte: currentDate,
               },
             },
           },
@@ -314,7 +415,7 @@ export class DeviceService {
             .populate("subId")
             .session(session);
 
-          if (!recipient?.subId || recipient.subActiveTill < new Date()) {
+          if (!recipient?.subId || recipient.subActiveTill < currentDate) {
             await TransferredDeviceModel.findByIdAndUpdate(
               transfer._id,
               { status: "failed", reason: "Recipient subscription invalid" },
@@ -398,6 +499,7 @@ export class DeviceService {
       );
     }
   }
+
   static async AdminUpdateDeviceStatus(
     deviceId: string,
     userId: string,
@@ -406,9 +508,9 @@ export class DeviceService {
     description: string
   ): Promise<DeviceModel> {
     try {
-      console.log(deviceId,status,location,description)
+      console.log(deviceId, status, location, description);
       const updatedDevice = await Device.findOneAndUpdate(
-        { _id: deviceId},
+        { _id: deviceId },
         { status, location, description },
         { new: true, runValidators: true }
       );
@@ -419,7 +521,7 @@ export class DeviceService {
 
       return updatedDevice;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new BadRequestError(
         error instanceof Error
           ? error.message

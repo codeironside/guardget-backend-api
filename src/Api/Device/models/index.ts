@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { DeviceModel } from "../interface";
+
 export enum DeviceStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
@@ -16,7 +17,11 @@ const deviceSchema = new Schema<DeviceModel>(
       unique: true,
       sparse: true,
     },
-    IMEI2: { type: String, unique: true, sparse: true },
+    IMEI2: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     serialNumber: {
       type: String,
       required: [true, "serialNumber is required"],
@@ -31,10 +36,15 @@ const deviceSchema = new Schema<DeviceModel>(
       default: DeviceStatus.ACTIVE,
       required: [true, "device must have a status"],
     },
-    location: { String },
-    description: { String },
+    location: { type: String },
+    description: { type: String },
   },
   { timestamps: true }
 );
+
+// Ensure proper indexes
+deviceSchema.index({ IMIE1: 1 }, { unique: true, sparse: true });
+deviceSchema.index({ IMEI2: 1 }, { unique: true, sparse: true });
+deviceSchema.index({ serialNumber: 1 }, { unique: true });
 
 export const Device = model<DeviceModel>("Device", deviceSchema);

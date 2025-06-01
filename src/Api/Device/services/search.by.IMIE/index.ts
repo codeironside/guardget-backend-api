@@ -4,8 +4,6 @@ import { BadRequestError } from "@/core/error";
 import Logger from "@/core/logger";
 import { TransferredDeviceModel } from "../../models/transfer_history";
 import { Types } from "mongoose";
-
-// Define interface for populated transfer history
 interface PopulatedTransfer {
   _id: Types.ObjectId;
   transferDate: Date;
@@ -76,17 +74,17 @@ export const searchByIMEI = async (req: Request, res: Response) => {
             email: transfer.fromID.email,
             firstName: transfer.fromID.firstName,
             surName: transfer.fromID.surName,
-            middleName: transfer.fromID.middleName, // Fixed property name
+            middleName: transfer.fromID.middleName,
             imageurl: transfer.fromID.imageurl,
           },
           to: {
             id: transfer.toID._id,
             username: transfer.toID.username,
             email: transfer.toID.email,
-            firstName: transfer.toID.firstName, // Fixed to use toID
-            surName: transfer.toID.surName, // Fixed to use toID
-            middleName: transfer.toID.middleName, // Fixed to use toID
-            imageurl: transfer.toID.imageurl, // Fixed to use toID
+            firstName: transfer.toID.firstName,
+            surName: transfer.toID.surName,
+            middleName: transfer.toID.middleName,
+            imageurl: transfer.toID.imageurl,
           },
         })),
       },
@@ -97,7 +95,7 @@ export const searchByIMEI = async (req: Request, res: Response) => {
       error instanceof Error ? error.message : "Device search failed"
     );
   }
-};
+};;
 
 const mapDeviceResponse = (device: any) => ({
   id: device._id,
@@ -113,6 +111,7 @@ const mapDeviceResponse = (device: any) => ({
     username: device.UserId.username,
     email: device.UserId.email,
     imageurl: device.UserId.imageurl,
+    phoneNumber:device.UserId.phoneNumber
   },
   updatedAt: device.updatedAt,
 });

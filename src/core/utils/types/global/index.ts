@@ -1,5 +1,6 @@
 export const API_SUFFIX = "/api/v1";
 export const day = new Date().toISOString();
+export const TRANSFER_EXPIRY_HOURS = 48;
 
 declare global {
   namespace Express {

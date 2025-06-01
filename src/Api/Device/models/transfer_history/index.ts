@@ -19,6 +19,7 @@ const transferHistory = new Schema<TransferredDevice>(
     },
     fromID: {
       type: Schema.Types.ObjectId,
+      ref:"User",
       required: [true, "sender id can not be blanked"],
     },
     status: {
@@ -28,6 +29,7 @@ const transferHistory = new Schema<TransferredDevice>(
       required: [true, "device must have a status"],
     },
     toID: {
+      ref:"User",
       type: Schema.Types.ObjectId,
       required: [true, "to Id can not be blanked"],
     },

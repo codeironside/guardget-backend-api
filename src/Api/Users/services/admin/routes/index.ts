@@ -62,7 +62,7 @@ adminRouter.patch(
   toggleUserStatus
 );
 adminRouter.put(
-  "/report-device/:id",
+  "/report-device/:deviceId",
   RoleGuard.allow("admin"),
   AdminUpdateDeviceStatus
 );

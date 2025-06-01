@@ -12,7 +12,10 @@ import { getAllReceipts } from "../Receipts/get.all.receipts";
 import { getUserReceipts } from "../Receipts/get.all.receipts.for.a.user";
 import { getOneReceipt } from "../Receipts/get.one.receipts";
 import { createAdmin } from "../Users/create.admin";
-
+import { TransferredDevice } from "@/Api/Device/interface";
+import { transferedDevices } from "../Device/device.tansfers";
+import { toggleUserStatus } from "../Users/Deactivate.users";
+import { AdminUpdateDeviceStatus } from "../Device/report.device";
 export const adminRouter = Router();
 
 adminRouter.use(authenticate);
@@ -27,6 +30,11 @@ adminRouter.put("/updateuser/:id", RoleGuard.allow("admin"), updateUser);
 
 //Device management
 adminRouter.get("/getdeVices", RoleGuard.allow("admin"), getAllDevices);
+adminRouter.get(
+  "/device-transfers",
+  RoleGuard.allow("admin"),
+  transferedDevices
+);
 adminRouter.get(
   "/getallforauser/:userId",
   RoleGuard.allow("admin"),
@@ -47,4 +55,14 @@ adminRouter.get(
   "/getOneReceipt/:receiptId",
   RoleGuard.allow("admin"),
   getOneReceipt
+);
+adminRouter.patch(
+  "/:id/deactivate",
+  RoleGuard.allow("admin"),
+  toggleUserStatus
+);
+adminRouter.put(
+  "/report-device/:id",
+  RoleGuard.allow("admin"),
+  AdminUpdateDeviceStatus
 );

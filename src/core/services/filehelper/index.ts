@@ -6,7 +6,8 @@ import multer, { FileFilterCallback } from "multer";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 const UPLOAD_DIR = path.resolve(process.cwd(), "public/usersimages");
-const HOST_PREFIX = "https://api.guardget.com/usersimages";
+// const HOST_PREFIX = "https://api.guardget.com/usersimages";
+const HOST_PREFIX = "http://localhost:3124/usersimages";
 
 async function ensureUploadDir() {
   try {

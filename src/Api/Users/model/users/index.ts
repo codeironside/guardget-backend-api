@@ -44,6 +44,7 @@ const userSchema = new Schema<UserModel>(
     keyholderPhone2: {
       type: String,
     },
+    Deactivated: { type: Boolean, default: false },
     email: {
       type: String,
       required: [true, "Email is required"],

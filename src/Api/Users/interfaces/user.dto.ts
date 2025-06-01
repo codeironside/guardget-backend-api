@@ -41,6 +41,7 @@ export interface UserModel extends Document {
   keyholderPhone1: string;
   keyholderPhone2: string;
   password: string;
+  Deactivated: boolean;
   subId?: PopulatedDoc<SubscriptionModel>;
   subActiveTill: Date;
   imageurl?: string;

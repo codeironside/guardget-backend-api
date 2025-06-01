@@ -21,6 +21,9 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
         if (!userExist) {
             throw new BadRequestError("user does not exist");
         }
+        if (userExist.Deactivated) {
+            throw new BadRequestError(`Account doesnt exist on our platform`)
+        }
         const isPasswordValid = bycrypt.compareSync(password, userExist.password);
         console.log(`password is valid ${isPasswordValid}`);
         if (!isPasswordValid) {
@@ -55,6 +58,6 @@ export const loginUser = async (req: Request<{},{}, LoginUser>, res: Response): 
 
     } catch (error) {
         console.log(`error ${JSON.stringify(error)}`)
-        throw new BadRequestError("invalid credentials");
+        throw new BadRequestError("invalid credentials or user doesnt exist");
     }
 }

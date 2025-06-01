@@ -398,4 +398,33 @@ export class DeviceService {
       );
     }
   }
+  static async AdminUpdateDeviceStatus(
+    deviceId: string,
+    userId: string,
+    status: DeviceStatus,
+    location: string,
+    description: string
+  ): Promise<DeviceModel> {
+    try {
+      console.log(deviceId,status,location,description)
+      const updatedDevice = await Device.findOneAndUpdate(
+        { _id: deviceId},
+        { status, location, description },
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedDevice) {
+        throw new BadRequestError("Device not found or unauthorized");
+      }
+
+      return updatedDevice;
+    } catch (error) {
+      console.log(error)
+      throw new BadRequestError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update device status"
+      );
+    }
+  }
 }
